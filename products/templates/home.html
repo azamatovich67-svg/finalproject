@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div style="position:relative; display:inline-block; margin-bottom:18px;">
+    <button onclick="toggleCat()" style="padding:9px 18px; background:#1e1e3a; color:#e0e0e0; border:1px solid #2a2a4a; border-radius:8px; cursor:pointer; font-size:14px; font-weight:bold;">
+        ☰ Категории ▼
+    </button>
+    <div id="catMenu" style="display:none; position:absolute; top:110%; left:0; background:#11112b; border:1px solid #2a2a4a; border-radius:10px; min-width:180px; z-index:50; overflow:hidden; box-shadow:0 8px 24px rgba(0,0,0,0.4);">
+        <a href="/" style="display:block; padding:11px 16px; color:#ccc; text-decoration:none; border-bottom:1px solid #1e1e3a; font-size:14px;">Все товары</a>
+        {% for cat in categories %}
+        <a href="?category={{ cat.slug }}" style="display:block; padding:11px 16px; color:#ccc; text-decoration:none; border-bottom:1px solid #1e1e3a; font-size:14px;">{{ cat.name }}</a>
+        {% endfor %}
+    </div>
+</div>
+
+<div class="products-grid">
+    {% for product in products %}
+    <div class="product-card">
+        <div class="product-img">
+            {% if product.image %}
+                <img src="{{ product.image.url }}" alt="{{ product.name }}">
+            {% else %}
+                <span style="color:#666;">Нет фото</span>
+            {% endif %}
+        </div>
+        <div class="product-info">
+            <p class="product-brand">{{ product.brand.name }}</p>
+            <h3 class="product-name">{{ product.name }}</h3>
+            {% if product.discount_price %}
+                <p class="price-old">{{ product.price }} сом</p>
+                <p class="price-new">{{ product.discount_price }} сом</p>
+            {% else %}
+                <p class="price-new">{{ product.price }} сом</p>
+            {% endif %}
+            {% if product.stock > 0 %}
+                <p class="in-stock">✅ В наличии</p>
+            {% else %}
+                <p class="out-stock">❌ Нет в наличии</p>
+            {% endif %}
+            <div class="card-btns">
+                <a href="{% url 'product_detail' product.slug %}" class="btn btn-outline">Подробнее</a>
+                {% if product.stock > 0 %}
+                    <a href="{% url 'add_to_cart' product.id %}" class="btn">В корзину</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% empty %}
+        <p style="color:#aaa; grid-column:1/-1;">Товары не найдены.</p>
+    {% endfor %}
+</div>
+
+<script>
+function toggleCat() {
+    var m = document.getElementById('catMenu');
+    m.style.display = m.style.display === 'none' ? 'block' : 'none';
+}
+document.addEventListener('click', function(e) {
+    var btn = document.querySelector('[onclick="toggleCat()"]');
+    var menu = document.getElementById('catMenu');
+    if (menu && btn && !btn.contains(e.target) && !menu.contains(e.target)) {
+        menu.style.display = 'none';
+    }
+});
+</script>
+
+{% endblock %}

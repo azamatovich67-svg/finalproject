@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% block content %}
+{% block searchbar %}{% endblock %}
+<div class="detail-box">
+    <div class="detail-img">
+        {% if product.image %}
+            <img src="{{ product.image.url }}" alt="{{ product.name }}">
+        {% endif %}
+    </div>
+    <div style="flex:1; min-width:260px;">
+        <p style="color:#6c63ff; font-size:13px;">{{ product.brand.name }} | {{ product.category.name }}</p>
+        <h1 style="margin:10px 0; color:white; font-size:22px; line-height:1.3;">{{ product.name }}</h1>
+        {% if product.model_name %}<p style="color:#aaa; margin:6px 0;">📱 Модель: <b style="color:white;">{{ product.model_name }}</b></p>{% endif %}
+        {% if product.power %}<p style="color:#aaa; margin:6px 0;">⚡ Мощность: <b style="color:white;">{{ product.power }}</b></p>{% endif %}
+        {% if product.volume %}<p style="color:#aaa; margin:6px 0;">📦 Объём: <b style="color:white;">{{ product.volume }}</b></p>{% endif %}
+        {% if product.warranty %}<p style="color:#aaa; margin:6px 0;">🛡 Гарантия: <b style="color:white;">{{ product.warranty }}</b></p>{% endif %}
+        <p style="color:#aaa; margin:6px 0;">⭐ Рейтинг: <b style="color:white;">{{ product.rating }}</b></p>
+        <p style="margin:14px 0; color:#aaa; font-size:14px; line-height:1.6;">{{ product.description }}</p>
+        {% if product.discount_price %}
+            <p style="color:#555; text-decoration:line-through; font-size:14px;">{{ product.price }} сом</p>
+            <p style="color:#a78bfa; font-size:28px; font-weight:bold;">{{ product.discount_price }} сом</p>
+        {% else %}
+            <p style="color:#a78bfa; font-size:28px; font-weight:bold;">{{ product.price }} сом</p>
+        {% endif %}
+        {% if product.stock > 0 %}
+            <p style="color:#4ade80; margin:10px 0;">✅ В наличии: {{ product.stock }} шт.</p>
+            <a href="{% url 'add_to_cart' product.id %}" class="btn" style="margin-top:10px; width:100%;">🛒 В корзину</a>
+        {% else %}
+            <p style="color:#f87171; margin:10px 0;">❌ Нет в наличии</p>
+        {% endif %}
+    </div>
+</div>
+
+<div style="margin-top:30px;">
+    <h2 style="color:white; margin-bottom:16px;">Отзывы ({{ reviews.count }})</h2>
+    {% for review in reviews %}
+    <div class="review-box">
+        <b>{{ review.user.username }}</b>
+        <span style="color:#f59e0b; margin-left:8px;">{% for i in "12345" %}{% if forloop.counter <= review.stars %}⭐{% endif %}{% endfor %}</span>
+        <p>{{ review.text }}</p>
+        <small style="color:#555;">{{ review.created_at|date:"d.m.Y" }}</small>
+    </div>
+    {% empty %}
+        <p style="color:#555;">Отзывов пока нет.</p>
+    {% endfor %}
+
+    {% if user.is_authenticated %}
+    <h3 style="margin-top:24px; margin-bottom:12px; color:white;">Оставить отзыв</h3>
+    <div style="background:#11112b; padding:20px; border-radius:10px; border:1px solid #1e1e3a;">
+        <form method="post">
+            {% csrf_token %}
+            <select name="stars">
+                <option value="5">⭐⭐⭐⭐⭐ Отлично</option>
+                <option value="4">⭐⭐⭐⭐ Хорошо</option>
+                <option value="3">⭐⭐⭐ Нормально</option>
+                <option value="2">⭐⭐ Плохо</option>
+                <option value="1">⭐ Ужасно</option>
+            </select>
+            <textarea name="text" rows="4" placeholder="Ваш отзыв..."></textarea>
+            <button type="submit" class="btn" style="width:100%;">Отправить</button>
+        </form>
+    </div>
+    {% else %}
+        <p style="margin-top:16px; color:#aaa;"><a href="{% url 'login' %}">Войдите</a>, чтобы оставить отзыв.</p>
+    {% endif %}
+</div>
+{% endblock %}

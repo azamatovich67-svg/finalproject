@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block content %}
+{% block searchbar %}{% endblock %}
+<h2 style="margin-bottom:20px; color:white;">👤 Личный кабинет</h2>
+<div style="background:#11112b; padding:18px; border-radius:12px; margin-bottom:20px; border:1px solid #1e1e3a;">
+    <p style="color:#aaa;"><b style="color:white;">Пользователь:</b> {{ user.username }}</p>
+    <p style="color:#aaa; margin-top:6px;"><b style="color:white;">Email:</b> {{ user.email }}</p>
+</div>
+<h3 style="margin-bottom:14px; color:white;">Мои заказы</h3>
+{% for order in orders %}
+<div style="background:#11112b; padding:18px; border-radius:12px; margin-bottom:14px; border:1px solid #1e1e3a;">
+    <div style="display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px;">
+        <h4 style="color:white;">Заказ #{{ order.id }} — {{ order.created_at|date:"d.m.Y" }}</h4>
+        <span style="color:#a78bfa; font-weight:bold;">{{ order.get_status_display }}</span>
+    </div>
+    <p style="color:#aaa; margin:8px 0; font-size:14px;">Адрес: {{ order.address }}</p>
+    {% for item in order.items.all %}
+        <p style="color:#666; font-size:13px; margin:3px 0;">• {{ item.product.name }} × {{ item.quantity }} — {{ item.price }} сом</p>
+    {% endfor %}
+    <p style="font-weight:bold; margin-top:10px; color:white;">Итого: <span style="color:#a78bfa;">{{ order.total }} сом</span></p>
+</div>
+{% empty %}
+    <p style="color:#555;">Заказов пока нет. <a href="{% url 'home' %}" style="color:#6c63ff;">Перейти к товарам</a></p>
+{% endfor %}
+{% endblock %}

@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block content %}
+{% block searchbar %}{% endblock %}
+<h2 style="margin-bottom:20px; color:white;">📦 Оформление заказа</h2>
+<div style="display:flex; gap:20px; flex-wrap:wrap;">
+    <div style="flex:2; min-width:280px; background:#11112b; padding:20px; border-radius:12px; border:1px solid #1e1e3a;">
+        <h3 style="margin-bottom:14px; color:white;">Ваш заказ</h3>
+        {% for item in items %}
+        <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #1e1e3a; flex-wrap:wrap; gap:4px;">
+            <span style="color:#ccc;">{{ item.product.name }} × {{ item.quantity }}</span>
+            <span style="color:#a78bfa; font-weight:bold;">{{ item.total_price }} сом</span>
+        </div>
+        {% endfor %}
+        <h3 style="margin-top:14px; text-align:right; color:white;">Итого: <span style="color:#a78bfa;">{{ total }} сом</span></h3>
+    </div>
+    <div style="flex:1; min-width:260px; background:#11112b; padding:20px; border-radius:12px; border:1px solid #1e1e3a;">
+        <h3 style="margin-bottom:14px; color:white;">Адрес доставки</h3>
+        <form method="post">
+            {% csrf_token %}
+            <textarea name="address" rows="5" placeholder="Введите адрес доставки..." required></textarea>
+            <button type="submit" class="btn" style="width:100%; margin-top:6px;">✅ Подтвердить заказ</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
