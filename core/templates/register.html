@@ -1,11 +1,22 @@
 {% extends 'base.html' %}
+
+{% block searchbar %}{% endblock %}
+
 {% block content %}
+<style>
+    .bottom-bar { display: none !important; }
+</style>
+
 <div style="display:flex; justify-content:center; align-items:center; min-height:80vh;">
     <div class="form-box">
-        <h2>📝 Регистрация</h2>
+        <h2>Регистрация</h2>
         <form method="post">
             {% csrf_token %}
-            {{ form.as_p }}
+            <label style="color:#aaa; font-size:13px;">Имя пользователя (никнейм)</label>
+            <input type="text" name="username" placeholder="Придумай никнейм..." required style="margin-top:6px;">
+            {% if error %}
+                <p style="color:#f87171; font-size:13px; margin-top:8px;">{{ error }}</p>
+            {% endif %}
             <button type="submit" class="btn" style="width:100%; margin-top:15px; padding:12px;">
                 Зарегистрироваться
             </button>
@@ -13,38 +24,4 @@
         <p>Уже есть аккаунт? <a href="{% url 'login' %}">Войти</a></p>
     </div>
 </div>
-
-<script>
-// Добавляем кнопку "показать пароль" ко всем полям пароля
-document.addEventListener('DOMContentLoaded', function() {
-    const passwordFields = document.querySelectorAll('input[type="password"]');
-    passwordFields.forEach(function(field) {
-        // Обёртка
-        const wrapper = document.createElement('div');
-        wrapper.style.cssText = 'position:relative; display:block;';
-        field.parentNode.insertBefore(wrapper, field);
-        wrapper.appendChild(field);
-
-        // Кнопка глаз
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.innerHTML = '👁';
-        btn.style.cssText = `
-            position:absolute; right:10px; top:50%; transform:translateY(-50%);
-            background:none; border:none; cursor:pointer; font-size:18px;
-            color:#888; padding:0;
-        `;
-        btn.addEventListener('click', function() {
-            if (field.type === 'password') {
-                field.type = 'text';
-                btn.innerHTML = '🙈';
-            } else {
-                field.type = 'password';
-                btn.innerHTML = '👁';
-            }
-        });
-        wrapper.appendChild(btn);
-    });
-});
-</script>
 {% endblock %}

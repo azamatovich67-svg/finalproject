@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% block searchbar %}{% endblock %}
+{% block content %}
+<style>
+  .contacts-page { padding: 0 14px 30px; font-family: 'DM Sans', sans-serif; }
+  .page-title {
+    font-size: 18px; font-weight: 700; color: white;
+    padding: 16px 0 16px;
+  }
+  .contact-card {
+    display: flex; align-items: center; gap: 14px;
+    background: #11112b;
+    border: 1px solid #1e1e3a;
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 12px;
+    text-decoration: none;
+    transition: all 0.2s;
+  }
+  .contact-card:hover {
+    border-color: #25d366;
+    box-shadow: 0 4px 20px rgba(37,211,102,0.15);
+    transform: translateY(-2px);
+  }
+  .contact-icon {
+    width: 48px; height: 48px; flex-shrink: 0;
+    background: rgba(37,211,102,0.12);
+    border: 1px solid rgba(37,211,102,0.25);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+  }
+  .contact-info { flex: 1; }
+  .contact-name { color: white; font-size: 15px; font-weight: 500; }
+  .contact-number { color: #555; font-size: 13px; margin-top: 3px; }
+  .whatsapp-arrow { color: #25d366; font-size: 20px; }
+</style>
+
+<div class="contacts-page">
+  <div class="page-title">Контакты</div>
+
+  {% for phone in phones %}
+  <a href="https://wa.me/{{ phone.number }}" target="_blank" class="contact-card">
+    <div class="contact-icon">💬</div>
+    <div class="contact-info">
+      <div class="contact-name">{{ phone.name }}</div>
+      <div class="contact-number">+{{ phone.number }}</div>
+    </div>
+    <span class="whatsapp-arrow">→</span>
+  </a>
+  {% endfor %}
+</div>
+{% endblock %}

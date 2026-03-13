@@ -1,28 +1,165 @@
 {% extends 'base.html' %}
-{% block content %}
 {% block searchbar %}{% endblock %}
-<h2 style="margin-bottom:20px; color:white;">🛒 Корзина</h2>
-{% if items %}
-<div style="background:#11112b; border-radius:12px; overflow:hidden; border:1px solid #1e1e3a;">
+{% block content %}
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap');
+
+  .cart-page { font-family: 'DM Sans', sans-serif; padding: 0 0 140px; }
+
+  /* CART ITEM CARD */
+  .cart-card {
+    margin: 12px 14px;
+    background: #11112b;
+    border: 1px solid #1e1e3a;
+    border-radius: 16px;
+    padding: 14px;
+    display: flex; align-items: center; gap: 14px;
+    transition: box-shadow 0.2s;
+  }
+  .cart-card:hover { box-shadow: 0 4px 20px rgba(108,99,255,0.1); border-color: #2a2a4a; }
+
+  .cart-img {
+    width: 80px; height: 80px; flex-shrink: 0;
+    background: white; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    padding: 8px; overflow: hidden;
+  }
+  .cart-img img { max-width: 100%; max-height: 100%; object-fit: contain; }
+  .cart-img-placeholder { font-size: 32px; }
+
+  .cart-info { flex: 1; min-width: 0; }
+  .cart-brand { color: #6c63ff; font-size: 11px; text-transform: uppercase; letter-spacing: 0.8px; }
+  .cart-name { color: white; font-size: 14px; font-weight: 500; margin: 3px 0 8px; line-height: 1.3; }
+  .cart-price { color: #a78bfa; font-size: 16px; font-weight: 700; }
+  .cart-price-total { color: #666; font-size: 12px; margin-top: 1px; }
+
+  .cart-right { display: flex; flex-direction: column; align-items: flex-end; gap: 10px; flex-shrink: 0; }
+
+  /* QTY CONTROL */
+  .qty-control {
+    display: flex; align-items: center; gap: 0;
+    background: #0d0d1a; border: 1px solid #2a2a4a; border-radius: 10px; overflow: hidden;
+  }
+  .qty-btn {
+    width: 32px; height: 32px;
+    background: none; border: none;
+    color: #a78bfa; font-size: 18px; font-weight: 300;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    transition: background 0.15s;
+    text-decoration: none;
+  }
+  .qty-btn:hover { background: rgba(108,99,255,0.15); }
+  .qty-num { min-width: 28px; text-align: center; color: white; font-size: 14px; font-weight: 600; }
+
+  /* DELETE BUTTON */
+  .delete-btn {
+    width: 30px; height: 30px;
+    background: rgba(248,113,113,0.08);
+    border: 1px solid rgba(248,113,113,0.2);
+    border-radius: 8px;
+    color: #f87171; font-size: 14px;
+    display: flex; align-items: center; justify-content: center;
+    text-decoration: none;
+    transition: all 0.2s;
+  }
+  .delete-btn:hover { background: rgba(248,113,113,0.18); border-color: #f87171; }
+
+  /* EMPTY */
+  .cart-empty { text-align: center; padding: 60px 20px; color: #444; }
+  .cart-empty a { color: #6c63ff; text-decoration: none; }
+
+  /* STICKY BOTTOM */
+  .cart-bottom {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: #11112b;
+    border-top: 1px solid #1e1e3a;
+    padding: 14px 16px 20px;
+    z-index: 200;
+    box-shadow: 0 -8px 32px rgba(0,0,0,0.4);
+  }
+  .cart-summary {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 12px;
+  }
+  .cart-summary-label { color: #888; font-size: 13px; }
+  .cart-summary-label b { color: white; }
+  .cart-total-price { color: #a78bfa; font-size: 20px; font-weight: 700; font-family: 'Syne', sans-serif; }
+  .checkout-btn {
+    display: block; width: 100%;
+    padding: 15px;
+    background: linear-gradient(135deg, #6c63ff, #8b5cf6);
+    color: white; text-align: center; text-decoration: none;
+    border-radius: 14px; font-size: 16px; font-weight: 700;
+    font-family: 'Syne', sans-serif; letter-spacing: 0.5px;
+    box-shadow: 0 4px 20px rgba(108,99,255,0.4);
+    transition: all 0.2s;
+  }
+  .checkout-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 28px rgba(108,99,255,0.5); }
+
+  .cart-page-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 18px; font-weight: 700;
+    color: white; padding: 16px 14px 4px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .cart-count-badge {
+    background: #6c63ff; color: white;
+    font-size: 11px; font-weight: 700;
+    padding: 2px 8px; border-radius: 20px;
+  }
+</style>
+
+<div class="cart-page">
+  <div class="cart-page-title">
+    Корзина
+    {% if items %}<span class="cart-count-badge">{{ items|length }}</span>{% endif %}
+  </div>
+
+  {% if items %}
     {% for item in items %}
-    <div style="display:flex; align-items:center; padding:14px; border-bottom:1px solid #1e1e3a; gap:12px; flex-wrap:wrap;">
+    <div class="cart-card">
+      <div class="cart-img">
         {% if item.product.image %}
-            <img src="{{ item.product.image.url }}" style="width:70px; height:70px; object-fit:contain; background:white; border-radius:8px; padding:5px; flex-shrink:0;">
+          <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}">
+        {% else %}
+          <span class="cart-img-placeholder">📦</span>
         {% endif %}
-        <div style="flex:1; min-width:120px;">
-            <h3 style="color:white; font-size:15px; line-height:1.3;">{{ item.product.name }}</h3>
-            <p style="color:#6c63ff; font-size:12px; margin-top:3px;">{{ item.product.brand.name }}</p>
+      </div>
+
+      <div class="cart-info">
+        <div class="cart-brand">{{ item.product.brand.name }}</div>
+        <div class="cart-name">{{ item.product.name }}</div>
+        <div class="cart-price">{{ item.product.final_price }} сом</div>
+      </div>
+
+      <div class="cart-right">
+        <a href="{% url 'remove_from_cart' item.id %}" class="delete-btn" title="Удалить">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3,6 5,6 21,6"/><path d="M19,6l-1,14H6L5,6"/><path d="M10,11v6"/><path d="M14,11v6"/><path d="M9,6V4h6v2"/></svg>
+        </a>
+        <div class="qty-control">
+          <a href="{% url 'remove_from_cart' item.id %}" class="qty-btn">−</a>
+          <span class="qty-num">{{ item.quantity }}</span>
+          <a href="{% url 'add_to_cart' item.product.id %}" class="qty-btn">+</a>
         </div>
-        <p style="font-size:16px; font-weight:bold; color:#a78bfa; white-space:nowrap;">{{ item.product.final_price }} сом × {{ item.quantity }}</p>
-        <a href="{% url 'remove_from_cart' item.id %}" style="color:#f87171; text-decoration:none; font-size:22px; padding:4px 8px;">✕</a>
+      </div>
     </div>
     {% endfor %}
-    <div style="padding:18px; text-align:right;">
-        <h3 style="color:white;">Итого: <span style="color:#a78bfa;">{{ total }} сом</span></h3>
-        <a href="{% url 'checkout' %}" class="btn" style="margin-top:14px; display:inline-block;">Оформить заказ</a>
+
+    <!-- STICKY CHECKOUT -->
+    <div class="cart-bottom">
+      <div class="cart-summary">
+        <span class="cart-summary-label">Товаров: <b>{{ items|length }}</b></span>
+        <span class="cart-total-price">{{ total }} сом</span>
+      </div>
+      <a href="{% url 'checkout' %}" class="checkout-btn">Оформить заказ →</a>
     </div>
+
+  {% else %}
+    <div class="cart-empty">
+      <div style="font-size:56px; margin-bottom:16px;">🛒</div>
+      <p style="color:#666; margin-bottom:16px; font-size:15px;">Корзина пуста</p>
+      <a href="{% url 'home' %}" style="display:inline-block; padding:12px 24px; background:linear-gradient(135deg,#6c63ff,#8b5cf6); color:white; border-radius:12px; text-decoration:none; font-weight:600;">Перейти к товарам</a>
+    </div>
+  {% endif %}
 </div>
-{% else %}
-    <p style="color:#aaa;">Корзина пуста. <a href="{% url 'home' %}" style="color:#6c63ff;">Перейти к товарам</a></p>
-{% endif %}
 {% endblock %}

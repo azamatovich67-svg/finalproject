@@ -1,6 +1,8 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, logout, authenticate
-from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from django.contrib.auth.forms import AuthenticationForm
+from django import forms
+from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from products.models import Product, Category
 from cart.models import Cart, CartItem
@@ -9,16 +11,28 @@ from reviews.models import Review
 from django.db.models import Q
 
 # Регистрация
+class NicknameRegisterForm(forms.Form):
+    username = forms.CharField(
+        label='Имя пользователя (никнейм)',
+        max_length=50,
+        widget=forms.TextInput(attrs={'placeholder': 'Придумай никнейм...'})
+    )
+
 def register(request):
+    error = None
     if request.method == 'POST':
-        form = UserCreationForm(request.POST)
+        form = NicknameRegisterForm(request.POST)
         if form.is_valid():
-            user = form.save()
-            login(request, user)
-            return redirect('home')  # ← после регистрации сразу на главную
+            username = form.cleaned_data['username']
+            if User.objects.filter(username=username).exists():
+                error = 'Этот никнейм уже занят'
+            else:
+                user = User.objects.create_user(username=username, password=username)
+                login(request, user)
+                return redirect('home')
     else:
-        form = UserCreationForm()
-    return render(request, 'register.html', {'form': form})
+        form = NicknameRegisterForm()
+    return render(request, 'register.html', {'form': form, 'error': error})
 
 # Вход
 def login_view(request):
@@ -98,6 +112,48 @@ def checkout(request):
 
 # Поиск
 def search(request):
-    q = request.GET.get('q', '')
-    products = Product.objects.filter(Q(name__icontains=q) | Q(brand__name__icontains=q)) if q else []
-    return render(request, 'search.html', {'products': products, 'q': q})
+    from products.models import Category
+    q = request.GET.get('q', '').strip()
+    category_id = request.GET.get('category', '')
+    sort = request.GET.get('sort', '')
+
+    categories = Category.objects.all()
+    products = Product.objects.all()
+
+    if q:
+        products = products.filter(
+            Q(name__icontains=q) |
+            Q(brand__name__icontains=q) |
+            Q(description__icontains=q) |
+            Q(category__name__icontains=q) |
+            Q(model_name__icontains=q)
+        ).distinct()
+
+    if category_id:
+        products = products.filter(category_id=category_id)
+
+    if sort == 'price_asc':
+        products = sorted(products, key=lambda p: p.final_price())
+    elif sort == 'price_desc':
+        products = sorted(products, key=lambda p: p.final_price(), reverse=True)
+    elif sort == 'popular':
+        products = products.order_by('-views_count')
+    elif sort == 'new':
+        products = products.order_by('-created_at')
+
+    return render(request, 'search.html', {
+        'products': products,
+        'q': q,
+        'categories': categories,
+        'selected_category': category_id,
+        'sort': sort,
+        'count': len(list(products)) if q or category_id else 0,
+    })
+# Контакты
+def contacts(request):
+    phones = [
+        {'name': 'Менеджер Азамат', 'number': '996 227 860 000'},
+        {'name': 'Менеджер Самат', 'number': '996 220 990 002'},
+        {'name': 'Техподдержка',    'number': '996 772 797 279'},
+    ]
+    return render(request, 'contacts.html', {'phones': phones})
