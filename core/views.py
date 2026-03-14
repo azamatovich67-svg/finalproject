@@ -149,6 +149,7 @@ def search(request):
         'sort': sort,
         'count': len(list(products)) if q or category_id else 0,
     })
+
 # Контакты
 def contacts(request):
     phones = [
