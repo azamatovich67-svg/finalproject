@@ -26,7 +26,6 @@ class Product(models.Model):
     views_count = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
 
-    # ✅ НОВЫЕ ПОЛЯ:
     model_name = models.CharField(max_length=100, blank=True, verbose_name="Модель")
     power = models.CharField(max_length=50, blank=True, verbose_name="Мощность (Вт)")
     volume = models.CharField(max_length=50, blank=True, verbose_name="Объём (л)")
@@ -35,6 +34,18 @@ class Product(models.Model):
 
     def final_price(self):
         return self.discount_price if self.discount_price else self.price
+
+    def fmt(self, value):
+        return f"{int(value):,}".replace(",", " ")
+
+    def display_price(self):
+        return self.fmt(self.price)
+
+    def display_discount(self):
+        return self.fmt(self.discount_price)
+
+    def display_final_price(self):
+        return self.fmt(self.final_price())
 
     def __str__(self):
         return self.name

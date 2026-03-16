@@ -1,6 +1,27 @@
 {% extends 'base.html' %}
 {% block content %}
 
+<div style="
+    background: linear-gradient(135deg, #7c6fff, #a78bfa);
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 20px;
+    position: relative;
+    overflow: hidden;
+">
+    <div style="position:absolute; right:-20px; top:-20px; width:120px; height:120px; background:rgba(255,255,255,0.1); border-radius:50%;"></div>
+    <div style="position:absolute; right:20px; bottom:-30px; width:80px; height:80px; background:rgba(255,255,255,0.08); border-radius:50%;"></div>
+    <p style="color:rgba(255,255,255,0.8); font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:1px; margin-bottom:6px;">⚡ Специальное предложение</p>
+    <h2 style="color:white; font-size:22px; font-weight:800; margin-bottom:6px; line-height:1.2;">Скидки до 30%<br>на смартфоны</h2>
+    <p style="color:rgba(255,255,255,0.85); font-size:13px; margin-bottom:14px;">Только до конца месяца!</p>
+    <a href="?category=telefony" style="
+        background:white; color:#7c6fff;
+        padding:9px 20px; border-radius:30px;
+        font-weight:700; font-size:13px;
+        text-decoration:none; display:inline-block;
+    ">Смотреть →</a>
+</div>
+
 <div style="position:relative; display:inline-block; margin-bottom:18px;">
     <button onclick="toggleCat()" style="padding:9px 18px; background:#1e1e3a; color:#e0e0e0; border:1px solid #2a2a4a; border-radius:8px; cursor:pointer; font-size:14px; font-weight:bold;">
         ☰ Категории ▼
@@ -27,10 +48,10 @@
             <p class="product-brand">{{ product.brand.name }}</p>
             <h3 class="product-name">{{ product.name }}</h3>
             {% if product.discount_price %}
-                <p class="price-old">{{ product.price }} сом</p>
-                <p class="price-new">{{ product.discount_price }} сом</p>
+                <p class="price-old">{{ product.display_price }} сом</p>
+                <p class="price-new">{{ product.display_discount }} сом</p>
             {% else %}
-                <p class="price-new">{{ product.price }} сом</p>
+                <p class="price-new">{{ product.display_price }} сом</p>
             {% endif %}
             {% if product.stock > 0 %}
                 <p class="in-stock">✅ В наличии</p>
@@ -63,5 +84,45 @@ document.addEventListener('click', function(e) {
     }
 });
 </script>
+
+{% if viewed_products %}
+<div style="margin-top:24px;">
+    <h2 style="color:white; margin-bottom:16px;">👁 Недавно просмотренные</h2>
+    <div class="products-grid">
+        {% for p in viewed_products %}
+        <div class="product-card">
+            <div class="product-img">
+                {% if p.image %}
+                    <img src="{{ p.image.url }}" alt="{{ p.name }}">
+                {% else %}
+                    <span style="color:#666;">Нет фото</span>
+                {% endif %}
+            </div>
+            <div class="product-info">
+                <p class="product-brand">{{ p.brand.name }}</p>
+                <h3 class="product-name">{{ p.name }}</h3>
+                {% if p.discount_price %}
+                    <p class="price-old">{{ p.display_price }} сом</p>
+                    <p class="price-new">{{ p.display_discount }} сом</p>
+                {% else %}
+                    <p class="price-new">{{ p.display_price }} сом</p>
+                {% endif %}
+                {% if p.stock > 0 %}
+                    <p class="in-stock">✅ В наличии</p>
+                {% else %}
+                    <p class="out-stock">❌ Нет в наличии</p>
+                {% endif %}
+                <div class="card-btns">
+                    <a href="{% url 'product_detail' p.slug %}" class="btn btn-outline">Подробнее</a>
+                    {% if p.stock > 0 %}
+                        <a href="{% url 'add_to_cart' p.id %}" class="btn">В корзину</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
 
 {% endblock %}

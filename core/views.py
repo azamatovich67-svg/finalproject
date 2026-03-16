@@ -56,16 +56,27 @@ def profile(request):
     orders = Order.objects.filter(user=request.user).order_by('-created_at')
     return render(request, 'profile.html', {'orders': orders})
 
-# Страница товара + отзывы
+# Страница товара + отзывы + похожие товары
 def product_detail(request, slug):
     product = get_object_or_404(Product, slug=slug)
+    product.views_count += 1
+    product.save()
     reviews = product.reviews.all().order_by('-created_at')
+    similar = Product.objects.filter(category=product.category).exclude(slug=slug)[:4]
+
+    # Недавно просмотренные
+    viewed = request.session.get('viewed', [])
+    if product.id not in viewed:
+        viewed.insert(0, product.id)
+    viewed = viewed[:6]
+    request.session['viewed'] = viewed
+
     if request.method == 'POST' and request.user.is_authenticated:
         text = request.POST.get('text')
         stars = int(request.POST.get('stars', 5))
         Review.objects.create(product=product, user=request.user, text=text, stars=stars)
         return redirect('product_detail', slug=slug)
-    return render(request, 'product_detail.html', {'product': product, 'reviews': reviews})
+    return render(request, 'product_detail.html', {'product': product, 'reviews': reviews, 'similar': similar})
 
 # Корзина
 @login_required
@@ -112,7 +123,6 @@ def checkout(request):
 
 # Поиск
 def search(request):
-    from products.models import Category
     q = request.GET.get('q', '').strip()
     category_id = request.GET.get('category', '')
     sort = request.GET.get('sort', '')

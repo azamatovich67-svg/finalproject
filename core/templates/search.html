@@ -147,9 +147,9 @@
           <div class="product-brand">{{ product.brand.name }}</div>
           <div class="product-name">{{ product.name }}</div>
           {% if product.discount_price %}
-            <div class="price-old">{{ product.price }} сом</div>
+            <div class="price-old">{{ product.display_price }} сом</div>
           {% endif %}
-          <div class="price-new">{{ product.final_price }} сом</div>
+          <div class="price-new">{{ product.display_final_price }} сом</div>
           {% if product.stock > 0 %}
             <div class="in-stock">✓ В наличии</div>
           {% else %}

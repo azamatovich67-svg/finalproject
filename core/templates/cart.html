@@ -129,7 +129,7 @@
       <div class="cart-info">
         <div class="cart-brand">{{ item.product.brand.name }}</div>
         <div class="cart-name">{{ item.product.name }}</div>
-        <div class="cart-price">{{ item.product.final_price }} сом</div>
+        <div class="cart-price">{{ item.product.display_final_price }} сом</div>
       </div>
 
       <div class="cart-right">
@@ -149,7 +149,7 @@
     <div class="cart-bottom">
       <div class="cart-summary">
         <span class="cart-summary-label">Товаров: <b>{{ items|length }}</b></span>
-        <span class="cart-total-price">{{ total }} сом</span>
+        <span class="cart-total-price">{{ total|floatformat:0 }} сом</span>
       </div>
       <a href="{% url 'checkout' %}" class="checkout-btn">Оформить заказ →</a>
     </div>

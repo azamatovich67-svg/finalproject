@@ -112,12 +112,12 @@
     <div class="summary-row">
       <span class="item-name">{{ item.product.name }}</span>
       <span class="item-qty">× {{ item.quantity }}</span>
-      <span class="item-price">{{ item.total_price }} сом</span>
+      <span class="item-price">{{ item.total_price|floatformat:0 }} сом</span>
     </div>
     {% endfor %}
     <div class="summary-total">
       <span>Итого к оплате</span>
-      <strong><em>{{ total }} сом</em></strong>
+      <strong><em>{{ total|floatformat:0 }} сом</em></strong>
     </div>
   </div>
 

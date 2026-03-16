@@ -15,12 +15,13 @@
         {% if product.volume %}<p style="color:#aaa; margin:6px 0;">📦 Объём: <b style="color:white;">{{ product.volume }}</b></p>{% endif %}
         {% if product.warranty %}<p style="color:#aaa; margin:6px 0;">🛡 Гарантия: <b style="color:white;">{{ product.warranty }}</b></p>{% endif %}
         <p style="color:#aaa; margin:6px 0;">⭐ Рейтинг: <b style="color:white;">{{ product.rating }}</b></p>
+        <p style="color:#aaa; margin:6px 0;">👁 Просмотров: <b style="color:white;">{{ product.views_count }}</b></p>
         <p style="margin:14px 0; color:#aaa; font-size:14px; line-height:1.6;">{{ product.description }}</p>
         {% if product.discount_price %}
-            <p style="color:#555; text-decoration:line-through; font-size:14px;">{{ product.price }} сом</p>
-            <p style="color:#a78bfa; font-size:28px; font-weight:bold;">{{ product.discount_price }} сом</p>
+            <p style="color:#555; text-decoration:line-through; font-size:14px;">{{ product.display_price }} сом</p>
+            <p style="color:#a78bfa; font-size:28px; font-weight:bold;">{{ product.display_discount }} сом</p>
         {% else %}
-            <p style="color:#a78bfa; font-size:28px; font-weight:bold;">{{ product.price }} сом</p>
+            <p style="color:#a78bfa; font-size:28px; font-weight:bold;">{{ product.display_price }} сом</p>
         {% endif %}
         {% if product.stock > 0 %}
             <p style="color:#4ade80; margin:10px 0;">✅ В наличии: {{ product.stock }} шт.</p>
@@ -64,4 +65,45 @@
         <p style="margin-top:16px; color:#aaa;"><a href="{% url 'login' %}">Войдите</a>, чтобы оставить отзыв.</p>
     {% endif %}
 </div>
+
+{% if similar %}
+<div style="margin-top:30px;">
+    <h2 style="color:white; margin-bottom:16px;">Похожие товары</h2>
+    <div class="products-grid">
+        {% for p in similar %}
+        <div class="product-card">
+            <div class="product-img">
+                {% if p.image %}
+                    <img src="{{ p.image.url }}" alt="{{ p.name }}">
+                {% else %}
+                    <span style="color:#666;">Нет фото</span>
+                {% endif %}
+            </div>
+            <div class="product-info">
+                <p class="product-brand">{{ p.brand.name }}</p>
+                <h3 class="product-name">{{ p.name }}</h3>
+                {% if p.discount_price %}
+                    <p class="price-old">{{ p.display_price }} сом</p>
+                    <p class="price-new">{{ p.display_discount }} сом</p>
+                {% else %}
+                    <p class="price-new">{{ p.display_price }} сом</p>
+                {% endif %}
+                {% if p.stock > 0 %}
+                    <p class="in-stock">✅ В наличии</p>
+                {% else %}
+                    <p class="out-stock">❌ Нет в наличии</p>
+                {% endif %}
+                <div class="card-btns">
+                    <a href="{% url 'product_detail' p.slug %}" class="btn btn-outline">Подробнее</a>
+                    {% if p.stock > 0 %}
+                        <a href="{% url 'add_to_cart' p.id %}" class="btn">В корзину</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
 {% endblock %}

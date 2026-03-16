@@ -169,13 +169,13 @@
       {% for item in order.items.all %}
       <div class="order-item-row">
         <span>{{ item.product.name }} × {{ item.quantity }}</span>
-        <span>{{ item.price }} сом</span>
+        <span>{{ item.price|floatformat:0 }} сом</span>
       </div>
       {% endfor %}
     </div>
     <div class="order-footer">
       <div class="order-address">📍 {{ order.address|truncatechars:40 }}</div>
-      <div class="order-total">Итого: <span>{{ order.total }} сом</span></div>
+      <div class="order-total">Итого: <span>{{ order.total|floatformat:0 }} сом</span></div>
     </div>
   </div>
   {% empty %}

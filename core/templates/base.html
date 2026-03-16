@@ -337,8 +337,19 @@
     </a>
 
     {% if user.is_authenticated %}
-    <a href="{% url 'cart' %}">
+    <a href="{% url 'cart' %}" style="position:relative;">
         <svg viewBox="0 0 24 24"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+        {% if cart_count > 0 %}
+        <span style="
+            position:absolute; top:-4px; right:8px;
+            background:#7c6fff; color:white;
+            font-size:10px; font-weight:700;
+            width:16px; height:16px;
+            border-radius:50%;
+            display:flex; align-items:center; justify-content:center;
+            line-height:1;
+        ">{{ cart_count }}</span>
+        {% endif %}
         Корзина
     </a>
 
