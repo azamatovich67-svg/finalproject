@@ -49,3 +49,18 @@ class Product(models.Model):
 
     def __str__(self):
         return self.name
+    
+class Banner(models.Model):
+    title = models.CharField(max_length=200, verbose_name="Заголовок")
+    subtitle = models.CharField(max_length=200, verbose_name="Подзаголовок")
+    button_text = models.CharField(max_length=100, verbose_name="Текст кнопки", default="Смотреть →")
+    category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Категория")
+    product = models.ForeignKey('Product', on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Товар")
+    is_active = models.BooleanField(default=True, verbose_name="Активен")
+
+    def __str__(self):
+        return self.title
+
+    class Meta:
+        verbose_name = "Баннер"
+        verbose_name_plural = "Баннеры"

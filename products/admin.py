@@ -35,3 +35,11 @@ class CategoryAdmin(admin.ModelAdmin):
 admin.site.register(Product, ProductAdmin)
 admin.site.register(Category, CategoryAdmin)
 admin.site.register(Brand)
+
+from products.models import Banner
+
+class BannerAdmin(admin.ModelAdmin):
+    list_display = ('title', 'subtitle', 'category', 'is_active')
+    list_editable = ('is_active',)
+
+admin.site.register(Banner, BannerAdmin)

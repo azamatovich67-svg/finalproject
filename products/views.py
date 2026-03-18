@@ -1,6 +1,7 @@
-from .models import Product, Category
-from django.shortcuts import render, redirect
+from .models import Product, Category, Banner
+from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
+from core.models import Wishlist
 
 @login_required(login_url='/register/')
 def product_list(request):
@@ -18,9 +19,19 @@ def product_list(request):
         viewed_dict = {p.id: p for p in Product.objects.filter(id__in=viewed_ids)}
         viewed_products = [viewed_dict[i] for i in viewed_ids if i in viewed_dict]
 
+    # Избранное
+    wishlist_ids = []
+    if request.user.is_authenticated:
+        wishlist_ids = list(Wishlist.objects.filter(user=request.user).values_list('product_id', flat=True))
+
+    # Баннеры
+    banners = Banner.objects.filter(is_active=True)
+
     return render(request, 'home.html', {
         'products': products,
         'categories': categories,
         'active_category': q_category or 'all',
         'viewed_products': viewed_products,
+        'wishlist_ids': wishlist_ids,
+        'banners': banners,
     })

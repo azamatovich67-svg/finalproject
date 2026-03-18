@@ -1,47 +1,71 @@
 {% extends 'base.html' %}
 {% block content %}
 
+{% for banner in banners %}
 <div style="
     background: linear-gradient(135deg, #7c6fff, #a78bfa);
     border-radius: 16px;
     padding: 20px;
-    margin-bottom: 20px;
+    margin-bottom: 16px;
     position: relative;
     overflow: hidden;
 ">
     <div style="position:absolute; right:-20px; top:-20px; width:120px; height:120px; background:rgba(255,255,255,0.1); border-radius:50%;"></div>
     <div style="position:absolute; right:20px; bottom:-30px; width:80px; height:80px; background:rgba(255,255,255,0.08); border-radius:50%;"></div>
     <p style="color:rgba(255,255,255,0.8); font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:1px; margin-bottom:6px;">⚡ Специальное предложение</p>
-    <h2 style="color:white; font-size:22px; font-weight:800; margin-bottom:6px; line-height:1.2;">Скидки до 30%<br>на смартфоны</h2>
-    <p style="color:rgba(255,255,255,0.85); font-size:13px; margin-bottom:14px;">Только до конца месяца!</p>
-    <a href="?category=telefony" style="
+    <h2 style="color:white; font-size:22px; font-weight:800; margin-bottom:6px; line-height:1.2;">{{ banner.title }}</h2>
+    <p style="color:rgba(255,255,255,0.85); font-size:13px; margin-bottom:14px;">{{ banner.subtitle }}</p>
+    {% if banner.product %}
+    <a href="{% url 'product_detail' banner.product.slug %}" style="
         background:white; color:#7c6fff;
         padding:9px 20px; border-radius:30px;
         font-weight:700; font-size:13px;
         text-decoration:none; display:inline-block;
-    ">Смотреть →</a>
+    ">{{ banner.button_text }}</a>
+    {% elif banner.category %}
+    <a href="?category={{ banner.category.slug }}" style="
+        background:white; color:#7c6fff;
+        padding:9px 20px; border-radius:30px;
+        font-weight:700; font-size:13px;
+        text-decoration:none; display:inline-block;
+    ">{{ banner.button_text }}</a>
+    {% endif %}
 </div>
+{% endfor %}
 
-<div style="position:relative; display:inline-block; margin-bottom:18px;">
-    <button onclick="toggleCat()" style="padding:9px 18px; background:#1e1e3a; color:#e0e0e0; border:1px solid #2a2a4a; border-radius:8px; cursor:pointer; font-size:14px; font-weight:bold;">
-        ☰ Категории ▼
-    </button>
-    <div id="catMenu" style="display:none; position:absolute; top:110%; left:0; background:#11112b; border:1px solid #2a2a4a; border-radius:10px; min-width:180px; z-index:50; overflow:hidden; box-shadow:0 8px 24px rgba(0,0,0,0.4);">
-        <a href="/" style="display:block; padding:11px 16px; color:#ccc; text-decoration:none; border-bottom:1px solid #1e1e3a; font-size:14px;">Все товары</a>
-        {% for cat in categories %}
-        <a href="?category={{ cat.slug }}" style="display:block; padding:11px 16px; color:#ccc; text-decoration:none; border-bottom:1px solid #1e1e3a; font-size:14px;">{{ cat.name }}</a>
-        {% endfor %}
-    </div>
+<div style="display:flex; gap:8px; overflow-x:auto; padding-bottom:8px; margin-bottom:16px; scrollbar-width:none;">
+    <a href="/" style="flex-shrink:0; display:flex; flex-direction:column; align-items:center; gap:4px; padding:10px 14px; background:{% if active_category == 'all' %}#7c6fff{% else %}#13132a{% endif %}; border-radius:12px; text-decoration:none; border:1px solid #1c1c38;">
+        <span style="font-size:20px;">🏠</span>
+        <span style="font-size:11px; color:white; white-space:nowrap;">Все</span>
+    </a>
+    {% for cat in categories %}
+    <a href="?category={{ cat.slug }}" style="flex-shrink:0; display:flex; flex-direction:column; align-items:center; gap:4px; padding:10px 14px; background:{% if active_category == cat.slug %}#7c6fff{% else %}#13132a{% endif %}; border-radius:12px; text-decoration:none; border:1px solid #1c1c38;">
+        <span style="font-size:20px;">📦</span>
+        <span style="font-size:11px; color:white; white-space:nowrap;">{{ cat.name }}</span>
+    </a>
+    {% endfor %}
 </div>
 
 <div class="products-grid">
     {% for product in products %}
     <div class="product-card">
-        <div class="product-img">
+        <div class="product-img" style="position:relative;">
             {% if product.image %}
                 <img src="{{ product.image.url }}" alt="{{ product.name }}">
             {% else %}
                 <span style="color:#666;">Нет фото</span>
+            {% endif %}
+            {% if user.is_authenticated %}
+            <button onclick="toggleWishlist({{ product.id }}, this)"
+                data-id="{{ product.id }}"
+                style="
+                    position:absolute; top:6px; right:6px;
+                    background:rgba(0,0,0,0.5); border:none;
+                    border-radius:50%; width:30px; height:30px;
+                    cursor:pointer; font-size:14px;
+                    display:flex; align-items:center; justify-content:center;
+                    transition: transform 0.2s;
+                ">{% if product.id in wishlist_ids %}❤️{% else %}🤍{% endif %}</button>
             {% endif %}
         </div>
         <div class="product-info">
@@ -70,20 +94,6 @@
         <p style="color:#aaa; grid-column:1/-1;">Товары не найдены.</p>
     {% endfor %}
 </div>
-
-<script>
-function toggleCat() {
-    var m = document.getElementById('catMenu');
-    m.style.display = m.style.display === 'none' ? 'block' : 'none';
-}
-document.addEventListener('click', function(e) {
-    var btn = document.querySelector('[onclick="toggleCat()"]');
-    var menu = document.getElementById('catMenu');
-    if (menu && btn && !btn.contains(e.target) && !menu.contains(e.target)) {
-        menu.style.display = 'none';
-    }
-});
-</script>
 
 {% if viewed_products %}
 <div style="margin-top:24px;">
@@ -124,5 +134,19 @@ document.addEventListener('click', function(e) {
     </div>
 </div>
 {% endif %}
+
+<script>
+function toggleWishlist(productId, btn) {
+    fetch('/wishlist/toggle/' + productId + '/', {
+        headers: {'X-Requested-With': 'XMLHttpRequest'}
+    })
+    .then(r => r.json())
+    .then(data => {
+        btn.style.transform = 'scale(1.3)';
+        setTimeout(() => btn.style.transform = 'scale(1)', 200);
+        btn.textContent = data.status === 'added' ? '❤️' : '🤍';
+    });
+}
+</script>
 
 {% endblock %}

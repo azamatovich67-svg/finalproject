@@ -13,4 +13,7 @@ urlpatterns = [
     path('checkout/', views.checkout, name='checkout'),
     path('search/', views.search, name='search'),
     path('contacts/', views.contacts, name='contacts'),
+    path('about/', views.about, name='about'),
+    path('wishlist/', views.wishlist_view, name='wishlist'),
+    path('wishlist/toggle/<int:product_id>/', views.toggle_wishlist, name='toggle_wishlist'),
 ]

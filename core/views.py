@@ -9,6 +9,8 @@ from cart.models import Cart, CartItem
 from orders.models import Order, OrderItem
 from reviews.models import Review
 from django.db.models import Q
+from django.http import JsonResponse
+from core.models import Wishlist
 
 # Регистрация
 class NicknameRegisterForm(forms.Form):
@@ -84,7 +86,8 @@ def cart_view(request):
     cart, _ = Cart.objects.get_or_create(user=request.user)
     items = cart.items.select_related('product')
     total = sum(i.total_price() for i in items)
-    return render(request, 'cart.html', {'items': items, 'total': total})
+    wishlist_items = Wishlist.objects.filter(user=request.user).select_related('product')
+    return render(request, 'cart.html', {'items': items, 'total': total, 'wishlist_items': wishlist_items})
 
 # Добавить в корзину
 @login_required
@@ -131,13 +134,34 @@ def search(request):
     products = Product.objects.all()
 
     if q:
-        products = products.filter(
-            Q(name__icontains=q) |
-            Q(brand__name__icontains=q) |
-            Q(description__icontains=q) |
-            Q(category__name__icontains=q) |
-            Q(model_name__icontains=q)
-        ).distinct()
+        # Словарь синонимов на русском
+        synonyms = {
+            'телефон': 'telefony',
+            'телефоны': 'telefony',
+            'смартфон': 'telefony',
+            'смартфоны': 'telefony',
+            'холодильник': 'holodilniki',
+            'холодильники': 'holodilniki',
+            'стиральная': 'stiralnaya',
+            'стиралка': 'stiralnaya',
+            'стиральная машина': 'stiralnaya',
+            'морозильник': 'morozilniki',
+            'морозильники': 'morozilniki',
+            'морозилка': 'morozilniki',
+        }
+
+        # Проверяем есть ли синоним
+        q_lower = q.lower()
+        if q_lower in synonyms:
+            products = products.filter(category__slug=synonyms[q_lower])
+        else:
+            products = products.filter(
+                Q(name__icontains=q) |
+                Q(brand__name__icontains=q) |
+                Q(description__icontains=q) |
+                Q(category__name__icontains=q) |
+                Q(model_name__icontains=q)
+            ).distinct()
 
     if category_id:
         products = products.filter(category_id=category_id)
@@ -168,3 +192,23 @@ def contacts(request):
         {'name': 'Техподдержка',    'number': '996 772 797 279'},
     ]
     return render(request, 'contacts.html', {'phones': phones})
+
+# О нас
+def about(request):
+    return render(request, 'about.html')
+
+# Добавить/убрать из избранного
+@login_required
+def toggle_wishlist(request, product_id):
+    product = get_object_or_404(Product, id=product_id)
+    wishlist_item, created = Wishlist.objects.get_or_create(user=request.user, product=product)
+    if not created:
+        wishlist_item.delete()
+        return JsonResponse({'status': 'removed'})
+    return JsonResponse({'status': 'added'})
+
+# Страница избранного
+@login_required
+def wishlist_view(request):
+    items = Wishlist.objects.filter(user=request.user).select_related('product')
+    return render(request, 'wishlist.html', {'items': items})
