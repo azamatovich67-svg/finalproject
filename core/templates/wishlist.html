@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% block searchbar %}{% endblock %}
+{% block content %}
+
+<div style="padding:16px 0;">
+    <h1 style="color:white; font-size:22px; font-weight:800; margin-bottom:20px;">❤️ Избранное</h1>
+
+    {% if items %}
+    <div class="products-grid">
+        {% for item in items %}
+        <div class="product-card" id="wish-{{ item.product.id }}">
+            <div class="product-img" style="position:relative;">
+                {% if item.product.image %}
+                    <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}">
+                {% else %}
+                    <span style="color:#666;">Нет фото</span>
+                {% endif %}
+                <button onclick="toggleWishlist({{ item.product.id }}, this)"
+                    data-id="{{ item.product.id }}"
+                    style="
+                        position:absolute; top:8px; right:8px;
+                        background:rgba(0,0,0,0.5); border:none;
+                        border-radius:50%; width:32px; height:32px;
+                        cursor:pointer; font-size:16px;
+                        display:flex; align-items:center; justify-content:center;
+                    ">❤️</button>
+            </div>
+            <div class="product-info">
+                <p class="product-brand">{{ item.product.brand.name }}</p>
+                <h3 class="product-name">{{ item.product.name }}</h3>
+                {% if item.product.discount_price %}
+                    <p class="price-old">{{ item.product.display_price }} сом</p>
+                    <p class="price-new">{{ item.product.display_discount }} сом</p>
+                {% else %}
+                    <p class="price-new">{{ item.product.display_price }} сом</p>
+                {% endif %}
+                <div class="card-btns">
+                    <a href="{% url 'product_detail' item.product.slug %}" class="btn btn-outline">Подробнее</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+        <div style="text-align:center; padding:60px 20px;">
+            <div style="font-size:56px; margin-bottom:16px;">🤍</div>
+            <p style="color:#666; font-size:15px; margin-bottom:16px;">Избранное пусто</p>
+            <a href="{% url 'home' %}" class="btn">Перейти к товарам</a>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+function toggleWishlist(productId, btn) {
+    fetch('/wishlist/toggle/' + productId + '/', {
+        method: 'GET',
+        headers: {'X-Requested-With': 'XMLHttpRequest'}
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.status === 'removed') {
+            var card = document.getElementById('wish-' + productId);
+            card.style.opacity = '0';
+            card.style.transition = 'opacity 0.3s';
+            setTimeout(() => card.remove(), 300);
+        }
+    });
+}
+</script>
+
+{% endblock %}

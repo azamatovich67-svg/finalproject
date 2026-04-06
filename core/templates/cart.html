@@ -1,0 +1,258 @@
+{% extends 'base.html' %}
+{% block searchbar %}{% endblock %}
+{% block content %}
+<style>
+  .cart-page { font-family: 'DM Sans', sans-serif; padding: 0 0 320px; }
+
+  .cart-card {
+    margin: 12px 0;
+    background: #11112b;
+    border: 1px solid #1e1e3a;
+    border-radius: 16px;
+    padding: 14px;
+    display: flex; align-items: center; gap: 14px;
+    transition: box-shadow 0.2s;
+  }
+  .cart-card:hover { box-shadow: 0 4px 20px rgba(108,99,255,0.1); border-color: #2a2a4a; }
+
+  .cart-img {
+    width: 80px; height: 80px; flex-shrink: 0;
+    background: white; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    padding: 8px; overflow: hidden;
+  }
+  .cart-img img { max-width: 100%; max-height: 100%; object-fit: contain; }
+
+  .cart-info { flex: 1; min-width: 0; }
+  .cart-brand { color: #6c63ff; font-size: 11px; text-transform: uppercase; letter-spacing: 0.8px; }
+  .cart-name { color: white; font-size: 14px; font-weight: 500; margin: 3px 0 8px; line-height: 1.3; }
+  .cart-price { color: #a78bfa; font-size: 16px; font-weight: 700; }
+
+  .cart-right { display: flex; flex-direction: column; align-items: flex-end; gap: 10px; flex-shrink: 0; }
+
+  .qty-control {
+    display: flex; align-items: center;
+    background: #0d0d1a; border: 1px solid #2a2a4a; border-radius: 10px; overflow: hidden;
+  }
+  .qty-btn {
+    width: 32px; height: 32px;
+    background: none; border: none;
+    color: #a78bfa; font-size: 18px;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    text-decoration: none; transition: background 0.15s;
+  }
+  .qty-btn:hover { background: rgba(108,99,255,0.15); }
+  .qty-num { min-width: 28px; text-align: center; color: white; font-size: 14px; font-weight: 600; }
+
+  .delete-btn {
+    width: 30px; height: 30px;
+    background: rgba(248,113,113,0.08);
+    border: 1px solid rgba(248,113,113,0.2);
+    border-radius: 8px; color: #f87171; font-size: 14px;
+    display: flex; align-items: center; justify-content: center;
+    text-decoration: none; transition: all 0.2s;
+  }
+  .delete-btn:hover { background: rgba(248,113,113,0.18); border-color: #f87171; }
+
+  .cart-empty { text-align: center; padding: 60px 20px; }
+
+  .cart-bottom {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: #11112b;
+    border-top: 1px solid #1e1e3a;
+    padding: 14px 16px 76px;
+    z-index: 200;
+    box-shadow: 0 -8px 32px rgba(0,0,0,0.4);
+  }
+  .cart-summary {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 12px;
+  }
+  .cart-summary-label { color: #888; font-size: 13px; }
+  .cart-summary-label b { color: white; }
+  .cart-total-price { color: #a78bfa; font-size: 20px; font-weight: 700; }
+
+  .cart-page-title {
+    font-size: 18px; font-weight: 700;
+    color: white; padding: 16px 0 4px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .cart-count-badge {
+    background: #6c63ff; color: white;
+    font-size: 11px; font-weight: 700;
+    padding: 2px 8px; border-radius: 20px;
+  }
+  .wa-btn {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    width: 100%;
+    background: #25D366; color: white;
+    padding: 15px; border-radius: 14px;
+    font-weight: 700; font-size: 15px;
+    text-decoration: none;
+    box-shadow: 0 4px 20px rgba(37,211,102,0.3);
+  }
+
+  /* WISHLIST */
+  .wishlist-section {
+    margin-top: 32px;
+    padding-bottom: 20px;
+  }
+  .wishlist-title {
+    font-size: 18px; font-weight: 700;
+    color: white; margin-bottom: 16px;
+    display: flex; align-items: center; gap: 8px;
+    border-top: 1px solid #1e1e3a;
+    padding-top: 24px;
+  }
+  .wish-card {
+    background: #11112b;
+    border: 1px solid #1e1e3a;
+    border-radius: 16px;
+    padding: 14px;
+    display: flex; align-items: center; gap: 14px;
+    margin-bottom: 12px;
+    transition: box-shadow 0.2s;
+  }
+  .wish-card:hover { border-color: #2a2a4a; }
+  .wish-img {
+    width: 70px; height: 70px; flex-shrink: 0;
+    background: white; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    padding: 6px; overflow: hidden;
+  }
+  .wish-img img { max-width: 100%; max-height: 100%; object-fit: contain; }
+  .wish-info { flex: 1; min-width: 0; }
+  .wish-name { color: white; font-size: 13px; font-weight: 500; margin-bottom: 4px; line-height: 1.3; }
+  .wish-price { color: #a78bfa; font-size: 15px; font-weight: 700; }
+  .wish-btns { display: flex; flex-direction: column; gap: 6px; flex-shrink: 0; }
+  .wish-add-btn {
+    padding: 7px 12px;
+    background: #7c6fff; color: white;
+    border-radius: 8px; font-size: 11px; font-weight: 600;
+    text-decoration: none; text-align: center;
+    white-space: nowrap;
+  }
+  .wish-del-btn {
+    padding: 7px 12px;
+    background: rgba(248,113,113,0.08);
+    border: 1px solid rgba(248,113,113,0.2);
+    border-radius: 8px; color: #f87171;
+    font-size: 11px; font-weight: 600;
+    text-decoration: none; text-align: center;
+    cursor: pointer;
+  }
+</style>
+
+<div class="cart-page">
+  <div class="cart-page-title">
+    Корзина
+    {% if items %}<span class="cart-count-badge">{{ items|length }}</span>{% endif %}
+  </div>
+
+  {% if items %}
+    {% for item in items %}
+    <div class="cart-card">
+      <div class="cart-img">
+        {% if item.product.image %}
+          <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}">
+        {% else %}
+          <span style="font-size:32px;">📦</span>
+        {% endif %}
+      </div>
+      <div class="cart-info">
+        <div class="cart-brand">{{ item.product.brand.name }}</div>
+        <div class="cart-name">{{ item.product.name }}</div>
+        <div class="cart-price">{{ item.product.display_final_price }} сом</div>
+      </div>
+      <div class="cart-right">
+        <a href="{% url 'remove_from_cart' item.id %}" class="delete-btn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3,6 5,6 21,6"/><path d="M19,6l-1,14H6L5,6"/><path d="M10,11v6"/><path d="M14,11v6"/><path d="M9,6V4h6v2"/></svg>
+        </a>
+        <div class="qty-control">
+          <a href="{% url 'remove_from_cart' item.id %}" class="qty-btn">−</a>
+          <span class="qty-num">{{ item.quantity }}</span>
+          <a href="{% url 'add_to_cart' item.product.id %}" class="qty-btn">+</a>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+
+    <div class="cart-bottom">
+      <div class="cart-summary">
+        <span class="cart-summary-label">Товаров: <b>{{ items|length }}</b></span>
+        <span class="cart-total-price">{{ total|floatformat:0 }} сом</span>
+      </div>
+      <a id="wa-cart-btn" href="#" target="_blank" class="wa-btn">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.123.554 4.118 1.528 5.855L.057 23.928a.5.5 0 0 0 .611.611l6.083-1.471A11.94 11.94 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.891 0-3.667-.523-5.183-1.433l-.369-.22-3.862.934.951-3.77-.242-.389A9.96 9.96 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
+        Оформить заказ через WhatsApp
+      </a>
+    </div>
+
+    <script>
+    var msg = "Здравствуйте! 👋\nЯ хочу оформить заказ из вашего магазина.\n\n";
+    msg += "🛒 Мой заказ:\n\n";
+    {% for item in items %}
+    msg += "📦 Название: {{ item.product.name }}\n";
+    msg += "🔢 Количество: {{ item.quantity }} шт.\n";
+    msg += "💰 Цена: {{ item.product.display_final_price }} сом\n\n";
+    {% endfor %}
+    msg += "💵 Общая сумма: {{ total|floatformat:0 }} сом\n\n";
+    msg += "Можете подтвердить заказ и написать детали?";
+    document.getElementById('wa-cart-btn').href = "https://wa.me/996227860000?text=" + encodeURIComponent(msg);
+    </script>
+
+  {% else %}
+    <div class="cart-empty">
+      <div style="font-size:56px; margin-bottom:16px;">🛒</div>
+      <p style="color:#666; margin-bottom:16px; font-size:15px;">Корзина пуста</p>
+      <a href="{% url 'home' %}" style="display:inline-block; padding:12px 24px; background:linear-gradient(135deg,#6c63ff,#8b5cf6); color:white; border-radius:12px; text-decoration:none; font-weight:600;">Перейти к товарам</a>
+    </div>
+  {% endif %}
+
+  <!-- ИЗБРАННОЕ -->
+  <div class="wishlist-section">
+    <div class="wishlist-title">❤️ Избранные товары</div>
+    {% if wishlist_items %}
+      {% for item in wishlist_items %}
+      <div class="wish-card" id="wish-{{ item.product.id }}">
+        <div class="wish-img">
+          {% if item.product.image %}
+            <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}">
+          {% else %}
+            <span style="font-size:28px;">📦</span>
+          {% endif %}
+        </div>
+        <div class="wish-info">
+          <div class="wish-name">{{ item.product.name }}</div>
+          <div class="wish-price">{{ item.product.display_final_price }} сом</div>
+        </div>
+        <div class="wish-btns">
+          <a href="{% url 'add_to_cart' item.product.id %}" class="wish-add-btn">🛒 В корзину</a>
+          <a href="#" onclick="removeWish({{ item.product.id }}); return false;" class="wish-del-btn">❌ Удалить</a>
+        </div>
+      </div>
+      {% endfor %}
+    {% else %}
+      <p style="color:#555; font-size:14px; text-align:center; padding:20px 0;">У вас пока нет избранных товаров ❤️</p>
+    {% endif %}
+  </div>
+</div>
+
+<script>
+function removeWish(productId) {
+    fetch('/wishlist/toggle/' + productId + '/', {
+        headers: {'X-Requested-With': 'XMLHttpRequest'}
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.status === 'removed') {
+            var card = document.getElementById('wish-' + productId);
+            card.style.opacity = '0';
+            card.style.transition = 'opacity 0.3s';
+            setTimeout(() => card.remove(), 300);
+        }
+    });
+}
+</script>
+
+{% endblock %}

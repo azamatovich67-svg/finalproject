@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% block content %}
+<div style="display:flex; justify-content:center; align-items:center; min-height:80vh;">
+    <div class="form-box">
+        <h2>🔐 Вход в аккаунт</h2>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="btn" style="width:100%; margin-top:15px; padding:12px;">
+                Войти
+            </button>
+        </form>
+        <p>Нет аккаунта? <a href="{% url 'register' %}">Зарегистрироваться</a></p>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const passwordFields = document.querySelectorAll('input[type="password"]');
+    passwordFields.forEach(function(field) {
+        const wrapper = document.createElement('div');
+        wrapper.style.cssText = 'position:relative; display:block;';
+        field.parentNode.insertBefore(wrapper, field);
+        wrapper.appendChild(field);
+
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.innerHTML = '👁';
+        btn.style.cssText = `
+            position:absolute; right:10px; top:50%; transform:translateY(-50%);
+            background:none; border:none; cursor:pointer; font-size:18px;
+            color:#888; padding:0;
+        `;
+        btn.addEventListener('click', function() {
+            if (field.type === 'password') {
+                field.type = 'text';
+                btn.innerHTML = '🙈';
+            } else {
+                field.type = 'password';
+                btn.innerHTML = '👁';
+            }
+        });
+        wrapper.appendChild(btn);
+    });
+});
+</script>
+{% endblock %}

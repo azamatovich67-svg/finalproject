@@ -1,0 +1,179 @@
+{% extends 'base.html' %}
+{% block content %}
+
+{% for banner in banners %}
+<div style="background:linear-gradient(135deg,#7c6fff,#a78bfa);border-radius:16px;padding:20px;margin-bottom:16px;position:relative;overflow:hidden;">
+    <div style="position:absolute;right:-20px;top:-20px;width:120px;height:120px;background:rgba(255,255,255,0.1);border-radius:50%;"></div>
+    <div style="position:absolute;right:20px;bottom:-30px;width:80px;height:80px;background:rgba(255,255,255,0.08);border-radius:50%;"></div>
+    <p style="color:rgba(255,255,255,0.8);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">⚡ Специальное предложение</p>
+    <h2 style="color:white;font-size:22px;font-weight:800;margin-bottom:6px;line-height:1.2;">{{ banner.title }}</h2>
+    <p style="color:rgba(255,255,255,0.85);font-size:13px;margin-bottom:14px;">{{ banner.subtitle }}</p>
+    {% if banner.product %}
+    <a href="{% url 'product_detail' banner.product.slug %}" style="background:white;color:#7c6fff;padding:9px 20px;border-radius:30px;font-weight:700;font-size:13px;text-decoration:none;display:inline-block;">{{ banner.button_text }}</a>
+    {% elif banner.category %}
+    <a href="?category={{ banner.category.slug }}" style="background:white;color:#7c6fff;padding:9px 20px;border-radius:30px;font-weight:700;font-size:13px;text-decoration:none;display:inline-block;">{{ banner.button_text }}</a>
+    {% endif %}
+</div>
+{% endfor %}
+
+<form method="get" id="filter-form" class="home-filter-form">
+
+  <div class="home-filter-card">
+    <div class="home-filter-inner">
+    <div class="home-filter-head">
+      <div class="home-filter-head-left">
+        <span class="home-filter-head-icon" aria-hidden="true">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+        </span>
+        <span class="home-filter-head-title">Фильтры</span>
+      </div>
+      {% if sort or active_brand or price_min or price_max or active_category != 'all' %}
+      <a href="/" class="home-filter-head-reset">Сбросить</a>
+      {% endif %}
+    </div>
+
+    <div class="home-filter-grid">
+      <div class="home-filter-select-wrap home-filter-span-2">
+        <select name="category" class="home-filter-select" onchange="this.form.submit()" aria-label="Категория">
+          <option value="" {% if active_category == 'all' %}selected{% endif %}>Все категории</option>
+          {% for cat in categories %}
+          <option value="{{ cat.slug }}" {% if active_category == cat.slug %}selected{% endif %}>{{ cat.name }}</option>
+          {% endfor %}
+        </select>
+        <span class="home-filter-chevron">▼</span>
+      </div>
+
+      <div class="home-filter-price-block home-filter-span-2">
+        <span class="home-filter-price-label">Цена <span class="home-filter-price-currency">сом</span></span>
+        <div class="home-filter-price-row" title="Цена в сомах">
+          <input type="number" name="price_min" placeholder="от" value="{{ price_min }}" inputmode="decimal" aria-label="Цена от">
+          <span class="dash">—</span>
+          <input type="number" name="price_max" placeholder="до" value="{{ price_max }}" inputmode="decimal" aria-label="Цена до">
+          <button type="submit" class="home-filter-ok">Применить</button>
+        </div>
+      </div>
+
+      <div class="home-filter-select-wrap">
+        <select name="brand" class="home-filter-select" onchange="this.form.submit()" aria-label="Бренд">
+          <option value="">Все бренды</option>
+          {% for brand in brands %}
+          <option value="{{ brand.id }}" {% if active_brand == brand.id|stringformat:"s" %}selected{% endif %}>{{ brand.name }}</option>
+          {% endfor %}
+        </select>
+        <span class="home-filter-chevron">▼</span>
+      </div>
+      <div class="home-filter-select-wrap">
+        <select name="sort" class="home-filter-select" onchange="this.form.submit()" aria-label="Сортировка">
+          <option value="" {% if not sort %}selected{% endif %}>По умолчанию</option>
+          <option value="price_asc" {% if sort == 'price_asc' %}selected{% endif %}>Дешевле</option>
+          <option value="price_desc" {% if sort == 'price_desc' %}selected{% endif %}>Дороже</option>
+          <option value="popular" {% if sort == 'popular' %}selected{% endif %}>Популярные</option>
+          <option value="new" {% if sort == 'new' %}selected{% endif %}>Новые</option>
+        </select>
+        <span class="home-filter-chevron">▼</span>
+      </div>
+    </div>
+    </div>
+  </div>
+
+</form>
+
+<div class="products-grid">
+    {% for product in products %}
+    <div class="product-card">
+        <div class="product-img" style="position:relative;">
+            {% if product.image %}
+                <img src="{{ product.image.url }}" alt="{{ product.name }}">
+            {% else %}
+                <span style="color:#666;">Нет фото</span>
+            {% endif %}
+            {% if user.is_authenticated %}
+            <button onclick="toggleWishlist({{ product.id }}, this)"
+                data-id="{{ product.id }}"
+                style="position:absolute;top:6px;right:6px;background:rgba(0,0,0,0.5);border:none;border-radius:50%;width:30px;height:30px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:transform 0.2s;">
+                {% if product.id in wishlist_ids %}❤️{% else %}🤍{% endif %}
+            </button>
+            {% endif %}
+        </div>
+        <div class="product-info">
+            <p class="product-brand">{{ product.brand.name }}</p>
+            <h3 class="product-name">{{ product.name }}</h3>
+            {% if product.discount_price %}
+                <p class="price-old">{{ product.display_price }} сом</p>
+                <p class="price-new">{{ product.display_discount }} сом</p>
+            {% else %}
+                <p class="price-new">{{ product.display_price }} сом</p>
+            {% endif %}
+            {% if product.stock > 0 %}
+                <p class="in-stock">✅ В наличии</p>
+            {% else %}
+                <p class="out-stock">❌ Нет в наличии</p>
+            {% endif %}
+            <div class="card-btns">
+                <a href="{% url 'product_detail' product.slug %}" class="btn btn-outline">Подробнее</a>
+                {% if product.stock > 0 %}
+                    <a href="{% url 'add_to_cart' product.id %}" class="btn">В корзину</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% empty %}
+        <p style="color:#aaa;grid-column:1/-1;">Товары не найдены.</p>
+    {% endfor %}
+</div>
+
+{% if viewed_products %}
+<div style="margin-top:24px;">
+    <h2 style="color:white;margin-bottom:16px;">👁 Недавно просмотренные</h2>
+    <div class="products-grid">
+        {% for p in viewed_products %}
+        <div class="product-card">
+            <div class="product-img">
+                {% if p.image %}
+                    <img src="{{ p.image.url }}" alt="{{ p.name }}">
+                {% else %}
+                    <span style="color:#666;">Нет фото</span>
+                {% endif %}
+            </div>
+            <div class="product-info">
+                <p class="product-brand">{{ p.brand.name }}</p>
+                <h3 class="product-name">{{ p.name }}</h3>
+                {% if p.discount_price %}
+                    <p class="price-old">{{ p.display_price }} сом</p>
+                    <p class="price-new">{{ p.display_discount }} сом</p>
+                {% else %}
+                    <p class="price-new">{{ p.display_price }} сом</p>
+                {% endif %}
+                {% if p.stock > 0 %}
+                    <p class="in-stock">✅ В наличии</p>
+                {% else %}
+                    <p class="out-stock">❌ Нет в наличии</p>
+                {% endif %}
+                <div class="card-btns">
+                    <a href="{% url 'product_detail' p.slug %}" class="btn btn-outline">Подробнее</a>
+                    {% if p.stock > 0 %}
+                        <a href="{% url 'add_to_cart' p.id %}" class="btn">В корзину</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<script>
+function toggleWishlist(productId, btn) {
+    fetch('/wishlist/toggle/' + productId + '/', {
+        headers: {'X-Requested-With': 'XMLHttpRequest'}
+    })
+    .then(r => r.json())
+    .then(data => {
+        btn.style.transform = 'scale(1.3)';
+        setTimeout(() => btn.style.transform = 'scale(1)', 200);
+        btn.textContent = data.status === 'added' ? '❤️' : '🤍';
+    });
+}
+</script>
+
+{% endblock %}

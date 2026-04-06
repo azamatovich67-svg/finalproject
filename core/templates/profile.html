@@ -1,0 +1,351 @@
+{% extends 'base.html' %}
+{% block nav_right %}
+<a href="{% url 'logout' %}" class="nav-logout"
+   onclick="return confirm('Выйти из аккаунта?');">Выйти</a>
+{% endblock %}
+{% block searchbar %}{% endblock %}
+{% block content %}
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap');
+
+  .profile-page { font-family: 'DM Sans', sans-serif; padding: 0 0 30px; }
+
+  /* PROFILE CARD */
+  .profile-card {
+    margin: 20px 14px;
+    background: linear-gradient(135deg, #1a1a3e 0%, #12122a 100%);
+    border: 1px solid #2a2a5a;
+    border-radius: 20px;
+    padding: 24px 20px;
+    box-shadow: 0 8px 32px rgba(108,99,255,0.15);
+    position: relative;
+    overflow: hidden;
+  }
+  .profile-card::before {
+    content: '';
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 120px; height: 120px;
+    background: radial-gradient(circle, rgba(108,99,255,0.2) 0%, transparent 70%);
+    border-radius: 50%;
+  }
+  .profile-avatar {
+    width: 64px; height: 64px;
+    background: linear-gradient(135deg, #6c63ff, #a78bfa);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 28px;
+    margin-bottom: 14px;
+    box-shadow: 0 4px 16px rgba(108,99,255,0.4);
+  }
+  .profile-name-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+    flex-wrap: wrap;
+  }
+  .profile-name {
+    font-family: 'Syne', sans-serif;
+    font-size: 22px; font-weight: 700;
+    color: white;
+    margin: 0;
+    flex: 1;
+    min-width: 0;
+    word-break: break-word;
+  }
+  .profile-nick-edit {
+    flex-shrink: 0;
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+    border: 1px solid rgba(108, 99, 255, 0.35);
+    background: rgba(108, 99, 255, 0.12);
+    color: #a78bfa;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s, border-color 0.2s, color 0.2s;
+  }
+  .profile-nick-edit:hover {
+    background: rgba(108, 99, 255, 0.22);
+    border-color: #6c63ff;
+    color: #fff;
+  }
+  .profile-nick-edit.is-active {
+    background: rgba(108, 99, 255, 0.28);
+    border-color: #6c63ff;
+    color: #fff;
+  }
+  .profile-nick-edit svg {
+    width: 18px;
+    height: 18px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .profile-meta {
+    color: #7070aa; font-size: 13px; margin: 3px 0;
+  }
+  .profile-stats {
+    display: flex; gap: 10px; margin-top: 18px;
+  }
+  .stat-pill {
+    background: rgba(108,99,255,0.12);
+    border: 1px solid rgba(108,99,255,0.25);
+    border-radius: 30px;
+    padding: 7px 14px;
+    font-size: 12px; color: #a78bfa;
+    display: flex; align-items: center; gap: 5px;
+  }
+  .stat-pill b { color: white; font-size: 14px; }
+
+  /* СМЕНА НИКА (панель по клику на ручку) */
+  .profile-nick-panel {
+    display: none;
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid rgba(42, 42, 90, 0.6);
+    animation: profileNickIn 0.2s ease;
+  }
+  .profile-nick-panel.is-open {
+    display: block;
+  }
+  @keyframes profileNickIn {
+    from { opacity: 0; transform: translateY(-6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .profile-nick-form {
+    margin: 0;
+    padding: 0;
+    border: none;
+  }
+  .profile-nick-form .nick-label {
+    display: block;
+    color: #9090c0;
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+  .profile-nick-form input[type="text"] {
+    width: 100%;
+    padding: 10px 14px;
+    border-radius: 12px;
+    border: 1px solid #2a2a5a;
+    background: rgba(8, 8, 20, 0.5);
+    color: #fff;
+    font-size: 15px;
+    outline: none;
+    margin-bottom: 8px;
+    box-sizing: border-box;
+  }
+  .profile-nick-form input:focus {
+    border-color: #6c63ff;
+    box-shadow: 0 0 0 2px rgba(108, 99, 255, 0.2);
+  }
+  .profile-nick-form .errorlist {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 8px;
+    color: #f87171;
+    font-size: 12px;
+  }
+  .profile-nick-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 4px;
+  }
+  .profile-nick-save {
+    flex: 1;
+    padding: 10px 16px;
+    border: none;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #6c63ff, #a78bfa);
+    color: #fff;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+  }
+  .profile-nick-cancel {
+    padding: 10px 14px;
+    border-radius: 12px;
+    border: 1px solid #2a2a5a;
+    background: transparent;
+    color: #9090c0;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .profile-nick-cancel:hover {
+    color: #fff;
+    border-color: #505070;
+  }
+
+  /* SECTION TITLE */
+  .section-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 16px; font-weight: 700;
+    color: white;
+    padding: 0 14px;
+    margin: 0 0 12px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .section-title::after {
+    content: ''; flex: 1;
+    height: 1px; background: #1e1e3a;
+  }
+
+  /* ORDER CARDS */
+  .order-card {
+    margin: 0 14px 14px;
+    background: #11112b;
+    border: 1px solid #1e1e3a;
+    border-radius: 16px;
+    overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .order-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.3); }
+  .order-header {
+    padding: 14px 16px;
+    display: flex; justify-content: space-between; align-items: center;
+    border-bottom: 1px solid #1a1a3a;
+  }
+  .order-num { font-family: 'Syne', sans-serif; font-weight: 700; color: white; font-size: 15px; }
+  .order-date { color: #555; font-size: 12px; margin-top: 2px; }
+  .status-badge {
+    padding: 5px 12px; border-radius: 20px;
+    font-size: 11px; font-weight: 600; letter-spacing: 0.3px;
+  }
+  .status-pending  { background: rgba(251,191,36,0.12);  color: #fbbf24; border: 1px solid rgba(251,191,36,0.25); }
+  .status-processing { background: rgba(96,165,250,0.12); color: #60a5fa; border: 1px solid rgba(96,165,250,0.25); }
+  .status-done     { background: rgba(74,222,128,0.12);  color: #4ade80; border: 1px solid rgba(74,222,128,0.25); }
+  .status-cancelled { background: rgba(248,113,113,0.12); color: #f87171; border: 1px solid rgba(248,113,113,0.25); }
+
+  .order-items { padding: 12px 16px; }
+  .order-item-row {
+    display: flex; justify-content: space-between;
+    padding: 5px 0; border-bottom: 1px solid #161628;
+    font-size: 13px; color: #888;
+  }
+  .order-item-row:last-child { border-bottom: none; }
+  .order-item-row span:last-child { color: #a78bfa; font-weight: 500; }
+  .order-footer {
+    padding: 12px 16px;
+    background: rgba(108,99,255,0.05);
+    border-top: 1px solid #1a1a3a;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .order-address { color: #555; font-size: 12px; max-width: 60%; }
+  .order-total { color: white; font-weight: 700; font-size: 16px; }
+  .order-total span { color: #a78bfa; }
+
+  .empty-state {
+    text-align: center; padding: 40px 20px; color: #444;
+  }
+  .empty-state a { color: #6c63ff; text-decoration: none; }
+</style>
+
+<div class="profile-page">
+
+  <!-- PROFILE CARD -->
+  <div class="profile-card">
+    <div class="profile-avatar">👤</div>
+    <div class="profile-name-row">
+      <div class="profile-name" id="profileDisplayName">{{ user.username }}</div>
+      <button type="button" class="profile-nick-edit" id="nickEditBtn"
+        aria-expanded="false" aria-controls="nickPanel" aria-label="Изменить никнейм">
+        <svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
+      </button>
+    </div>
+    <div class="profile-meta">ID: #{{ user.id }}</div>
+    <div class="profile-meta">Зарегистрирован: {{ user.date_joined|date:"d.m.Y" }}</div>
+    <div class="profile-stats">
+      <div class="stat-pill"><b>{{ orders.count }}</b> заказов</div>
+      {% if user.is_staff %}<div class="stat-pill">⭐ Администратор</div>{% endif %}
+    </div>
+
+    <div id="nickPanel" class="profile-nick-panel{% if nickname_form.username.errors %} is-open{% endif %}" role="region" aria-labelledby="nickPanelLabel">
+      <form method="post" class="profile-nick-form" action="{% url 'profile' %}" id="nickForm">
+        {% csrf_token %}
+        <span class="nick-label" id="nickPanelLabel">Новый никнейм</span>
+        {{ nickname_form.username }}
+        {{ nickname_form.username.errors }}
+        <div class="profile-nick-actions">
+          <button type="button" class="profile-nick-cancel" id="nickCancelBtn">Отмена</button>
+          <button type="submit" class="profile-nick-save">Сохранить</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+<script>
+(function () {
+  var panel = document.getElementById('nickPanel');
+  var btn = document.getElementById('nickEditBtn');
+  var cancel = document.getElementById('nickCancelBtn');
+  var input = panel && panel.querySelector('input[name="username"]');
+  if (!panel || !btn) return;
+
+  function setOpen(open) {
+    panel.classList.toggle('is-open', open);
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    btn.classList.toggle('is-active', open);
+    if (open && input) {
+      setTimeout(function () { input.focus(); if (input.select) input.select(); }, 50);
+    }
+  }
+
+  {% if nickname_form.username.errors %}
+  setOpen(true);
+  {% endif %}
+
+  btn.addEventListener('click', function () {
+    setOpen(!panel.classList.contains('is-open'));
+  });
+  if (cancel) {
+    cancel.addEventListener('click', function () {
+      setOpen(false);
+      if (input) input.value = '{{ user.username|escapejs }}';
+    });
+  }
+})();
+</script>
+
+  <!-- ORDERS -->
+  <div class="section-title">Мои заказы</div>
+
+  {% for order in orders %}
+  <div class="order-card">
+    <div class="order-header">
+      <div>
+        <div class="order-num">Заказ #{{ order.id }}</div>
+        <div class="order-date">{{ order.created_at|date:"d.m.Y в H:i" }}</div>
+      </div>
+      <span class="status-badge status-{{ order.status }}">{{ order.get_status_display }}</span>
+    </div>
+    <div class="order-items">
+      {% for item in order.items.all %}
+      <div class="order-item-row">
+        <span>{{ item.product.name }} × {{ item.quantity }}</span>
+        <span>{{ item.price|floatformat:0 }} сом</span>
+      </div>
+      {% endfor %}
+    </div>
+    <div class="order-footer">
+      <div class="order-address">📍 {{ order.address|truncatechars:40 }}</div>
+      <div class="order-total">Итого: <span>{{ order.total|floatformat:0 }} сом</span></div>
+    </div>
+  </div>
+  {% empty %}
+  <div class="empty-state">
+    <div style="font-size:48px; margin-bottom:12px;">📦</div>
+    <p style="color:#666; margin-bottom:12px;">Заказов пока нет</p>
+    <a href="{% url 'home' %}">Перейти к товарам →</a>
+  </div>
+  {% endfor %}
+
+</div>
+{% endblock %}

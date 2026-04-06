@@ -1,0 +1,457 @@
+{% extends 'base.html' %}
+{% block searchbar %}{% endblock %}
+{% block content %}
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=DM+Sans:wght@300;400;500&display=swap');
+
+  :root {
+    --neon: #b06aff;
+    --neon-dim: rgba(176,106,255,0.18);
+    --neon-glow: rgba(176,106,255,0.45);
+    --teal: #00e5c8;
+    --teal-dim: rgba(0,229,200,0.12);
+    --bg: #07071a;
+    --card-bg: #0d0d24;
+    --border: rgba(176,106,255,0.28);
+    --text: #e8e0ff;
+    --muted: #6b6490;
+  }
+
+  .cp-wrap {
+    padding: 0 0 100px;
+    background: var(--bg);
+    min-height: 100vh;
+    font-family: 'DM Sans', sans-serif;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  /* Ambient grid bg */
+  .cp-wrap::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(176,106,255,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(176,106,255,0.04) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .cp-inner { position: relative; z-index: 1; padding: 0 16px; }
+
+  /* ── HEADER ── */
+  .cp-header {
+    padding: 22px 16px 20px;
+    position: relative;
+  }
+  .cp-header-label {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 4px;
+    color: var(--neon);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+    opacity: 0.8;
+  }
+  .cp-title {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 30px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    line-height: 1;
+    margin-bottom: 12px;
+    text-shadow: 0 0 30px var(--neon-glow);
+  }
+  .cp-title span { color: var(--neon); }
+  .cp-desc {
+    font-size: 13px;
+    line-height: 1.65;
+    color: #8a80aa;
+    max-width: 320px;
+  }
+
+  /* Decorative corner */
+  .cp-header::after {
+    content: '';
+    position: absolute;
+    top: 22px; right: 16px;
+    width: 50px; height: 50px;
+    border-top: 2px solid var(--neon);
+    border-right: 2px solid var(--neon);
+    opacity: 0.35;
+  }
+
+  /* ── SECTION LABEL ── */
+  .section-label {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin: 24px 0 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, var(--border), transparent);
+  }
+
+  /* ── MANAGER CARD ── */
+  .manager-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 14px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.25s, box-shadow 0.25s, transform 0.2s;
+    -webkit-tap-highlight-color: transparent;
+    cursor: pointer;
+  }
+  .manager-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--neon), transparent);
+    opacity: 0.5;
+  }
+  .manager-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, var(--neon-dim) 0%, transparent 55%);
+    opacity: 0;
+    transition: opacity 0.25s;
+    pointer-events: none;
+  }
+  .manager-card:hover, .manager-card:active {
+    border-color: var(--neon);
+    box-shadow: 0 0 20px var(--neon-glow), 0 4px 30px rgba(0,0,0,0.4);
+    transform: translateY(-2px);
+  }
+  .manager-card:hover::after { opacity: 1; }
+
+  /* Card top row */
+  .card-top {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    margin-bottom: 14px;
+  }
+  .card-icon {
+    width: 50px; height: 50px; flex-shrink: 0;
+    background: var(--neon-dim);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+    position: relative;
+    z-index: 1;
+  }
+  .card-info { flex: 1; position: relative; z-index: 1; }
+  .card-name {
+    font-family: 'Rajdhani', sans-serif;
+    color: #fff;
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    line-height: 1.2;
+  }
+  .card-number {
+    font-size: 12px;
+    color: var(--muted);
+    font-family: monospace;
+    letter-spacing: 0.5px;
+    margin-top: 3px;
+  }
+  .card-status {
+    font-size: 11px;
+    margin-top: 5px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .status-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+  .status-dot.green { background: #00e56a; box-shadow: 0 0 6px #00e56a; }
+  .status-dot.yellow { background: #ffd600; box-shadow: 0 0 6px #ffd600; }
+  .status-text.green { color: #00e56a; }
+  .status-text.yellow { color: #ffd600; }
+  .card-arrow {
+    color: var(--neon);
+    font-size: 18px;
+    font-weight: bold;
+    position: relative; z-index: 1;
+    transition: transform 0.2s;
+  }
+  .manager-card:hover .card-arrow { transform: translateX(4px); }
+
+  /* Quick buttons */
+  .card-actions {
+    display: flex;
+    gap: 8px;
+    position: relative; z-index: 1;
+  }
+  .action-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    padding: 9px 6px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.2s;
+    border: 1px solid;
+    -webkit-tap-highlight-color: transparent;
+    white-space: nowrap;
+  }
+  .btn-call {
+    background: rgba(176,106,255,0.1);
+    border-color: rgba(176,106,255,0.3);
+    color: var(--neon);
+  }
+  .btn-call:hover, .btn-call:active {
+    background: rgba(176,106,255,0.22);
+    box-shadow: 0 0 12px rgba(176,106,255,0.3);
+  }
+  .btn-wa {
+    background: rgba(37,211,102,0.08);
+    border-color: rgba(37,211,102,0.3);
+    color: #25d366;
+  }
+  .btn-wa:hover, .btn-wa:active {
+    background: rgba(37,211,102,0.18);
+    box-shadow: 0 0 12px rgba(37,211,102,0.25);
+  }
+  .btn-tg {
+    background: rgba(0,136,204,0.08);
+    border-color: rgba(0,136,204,0.3);
+    color: #29b6f6;
+  }
+  .btn-tg:hover, .btn-tg:active {
+    background: rgba(0,136,204,0.18);
+    box-shadow: 0 0 12px rgba(0,136,204,0.25);
+  }
+  .btn-icon { font-size: 14px; }
+
+  /* ── SUPPORT CARD ── */
+  .support-card {
+    background: var(--card-bg);
+    border: 1px solid rgba(0,229,200,0.25);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 14px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.25s, box-shadow 0.25s, transform 0.2s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .support-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--teal), transparent);
+    opacity: 0.5;
+  }
+  .support-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, var(--teal-dim) 0%, transparent 55%);
+    opacity: 0;
+    transition: opacity 0.25s;
+    pointer-events: none;
+  }
+  .support-card:hover, .support-card:active {
+    border-color: var(--teal);
+    box-shadow: 0 0 20px rgba(0,229,200,0.3), 0 4px 30px rgba(0,0,0,0.4);
+    transform: translateY(-2px);
+  }
+  .support-card:hover::after { opacity: 1; }
+  .support-card .card-icon {
+    background: var(--teal-dim);
+    border-color: rgba(0,229,200,0.25);
+  }
+  .support-card .card-arrow { color: var(--teal); }
+  .support-card:hover .card-arrow { transform: translateX(4px); }
+  .support-desc {
+    font-size: 12px;
+    color: #5a7a75;
+    margin-top: 4px;
+    line-height: 1.4;
+  }
+  .support-card .btn-call {
+    background: rgba(0,229,200,0.08);
+    border-color: rgba(0,229,200,0.3);
+    color: var(--teal);
+  }
+  .support-card .btn-call:hover {
+    background: rgba(0,229,200,0.18);
+    box-shadow: 0 0 12px rgba(0,229,200,0.25);
+  }
+
+  /* ── FOOTER NOTE ── */
+  .cp-footer {
+    margin: 28px 0 0;
+    background: linear-gradient(135deg, rgba(176,106,255,0.06), rgba(0,229,200,0.04));
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .cp-footer-icon {
+    font-size: 22px;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .cp-footer-text {
+    font-size: 13px;
+    color: #7a708f;
+    line-height: 1.6;
+  }
+  .cp-footer-text strong {
+    color: var(--neon);
+    font-weight: 500;
+  }
+
+  /* Entrance animation */
+  .fade-up {
+    opacity: 0;
+    transform: translateY(18px);
+    animation: fadeUp 0.45s ease forwards;
+  }
+  .fade-up:nth-child(1) { animation-delay: 0.05s; }
+  .fade-up:nth-child(2) { animation-delay: 0.15s; }
+  .fade-up:nth-child(3) { animation-delay: 0.25s; }
+  .fade-up:nth-child(4) { animation-delay: 0.35s; }
+  @keyframes fadeUp {
+    to { opacity: 1; transform: translateY(0); }
+  }
+</style>
+
+<div class="cp-wrap">
+  <!-- Header -->
+  <div class="cp-header fade-up">
+    <div class="cp-header-label">Voltessa</div>
+    <div class="cp-title">КОНТА<span>КТЫ</span></div>
+    <div class="cp-desc">Есть вопрос по заказу или товару? Наша команда всегда на связи. Выберите менеджера ниже и свяжитесь с нами удобным способом.</div>
+  </div>
+
+  <div class="cp-inner">
+
+    <!-- Managers section -->
+    <div class="section-label fade-up">Менеджеры</div>
+
+    <!-- Azamat -->
+    <div class="manager-card fade-up">
+      <div class="card-top">
+        <div class="card-icon">💬</div>
+        <div class="card-info">
+          <div class="card-name">Менеджер Азамат</div>
+          <div class="card-number">+996 227 860 000</div>
+          <div class="card-status">
+            <span class="status-dot green"></span>
+            <span class="status-text green">Онлайн</span>
+          </div>
+        </div>
+        <div class="card-arrow">›</div>
+      </div>
+      <div class="card-actions">
+        <a href="tel:+996227860000" class="action-btn btn-call">
+          <span class="btn-icon">📞</span> Позвонить
+        </a>
+        <a href="https://wa.me/996227860000" target="_blank" class="action-btn btn-wa">
+          <span class="btn-icon">💬</span> WhatsApp
+        </a>
+        <a href="https://t.me/+996227860000" target="_blank" class="action-btn btn-tg">
+          <span class="btn-icon">✈️</span> Telegram
+        </a>
+      </div>
+    </div>
+
+    <!-- Samat -->
+    <div class="manager-card fade-up">
+      <div class="card-top">
+        <div class="card-icon">💬</div>
+        <div class="card-info">
+          <div class="card-name">Менеджер Самат</div>
+          <div class="card-number">+996 220 990 002</div>
+          <div class="card-status">
+            <span class="status-dot yellow"></span>
+            <span class="status-text yellow">Ответим скоро</span>
+          </div>
+        </div>
+        <div class="card-arrow">›</div>
+      </div>
+      <div class="card-actions">
+        <a href="tel:+996220990002" class="action-btn btn-call">
+          <span class="btn-icon">📞</span> Позвонить
+        </a>
+        <a href="https://wa.me/996220990002" target="_blank" class="action-btn btn-wa">
+          <span class="btn-icon">💬</span> WhatsApp
+        </a>
+        <a href="https://t.me/+996220990002" target="_blank" class="action-btn btn-tg">
+          <span class="btn-icon">✈️</span> Telegram
+        </a>
+      </div>
+    </div>
+
+    <!-- Support section -->
+    <div class="section-label fade-up">Техподдержка</div>
+
+    <div class="support-card fade-up">
+      <div class="card-top">
+        <div class="card-icon">🛠️</div>
+        <div class="card-info">
+          <div class="card-name">Техподдержка</div>
+          <div class="card-number">+996 772 797 279</div>
+          <div class="support-desc">Помощь с техническими вопросами и проблемами с заказами</div>
+        </div>
+        <div class="card-arrow">›</div>
+      </div>
+      <div class="card-actions">
+        <a href="tel:+996772797279" class="action-btn btn-call">
+          <span class="btn-icon">📞</span> Позвонить
+        </a>
+        <a href="https://wa.me/996772797279" target="_blank" class="action-btn btn-wa">
+          <span class="btn-icon">💬</span> WhatsApp
+        </a>
+        <a href="https://t.me/+996772797279" target="_blank" class="action-btn btn-tg">
+          <span class="btn-icon">✈️</span> Telegram
+        </a>
+      </div>
+    </div>
+
+    <!-- Footer note -->
+    <div class="cp-footer fade-up">
+      <div class="cp-footer-icon">🕐</div>
+      <div class="cp-footer-text">
+        Мы отвечаем <strong>ежедневно с 09:00 до 22:00</strong>.<br>
+        Среднее время ответа — <strong>5–10 минут</strong>.
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

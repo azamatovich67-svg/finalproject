@@ -1,0 +1,186 @@
+{% extends 'base.html' %}
+{% block content %}
+{% block searchbar %}{% endblock %}
+<div class="detail-box">
+    <div class="detail-img">
+        {% if product.image %}
+            <img src="{{ product.image.url }}" alt="{{ product.name }}">
+        {% endif %}
+    </div>
+    <div style="flex:1; min-width:260px;">
+        <p style="color:#6c63ff; font-size:13px;">{{ product.brand.name }} | {{ product.category.name }}</p>
+        <h1 style="margin:10px 0; color:white; font-size:22px; line-height:1.3;">{{ product.name }}</h1>
+        {% if product.model_name %}<p style="color:#aaa; margin:6px 0;">📱 Модель: <b style="color:white;">{{ product.model_name }}</b></p>{% endif %}
+        {% if product.power %}<p style="color:#aaa; margin:6px 0;">⚡ Мощность: <b style="color:white;">{{ product.power }}</b></p>{% endif %}
+        {% if product.volume %}<p style="color:#aaa; margin:6px 0;">📦 Объём: <b style="color:white;">{{ product.volume }}</b></p>{% endif %}
+        {% if product.warranty %}<p style="color:#aaa; margin:6px 0;">🛡 Гарантия: <b style="color:white;">{{ product.warranty }}</b></p>{% endif %}
+        <p style="color:#aaa; margin:6px 0;">⭐ Рейтинг: <b style="color:white;">{{ product.rating }}</b></p>
+        <p style="color:#aaa; margin:6px 0;">👁 Просмотров: <b style="color:white;">{{ product.views_count }}</b></p>
+        <p style="margin:14px 0; color:#aaa; font-size:14px; line-height:1.6;">{{ product.description }}</p>
+        {% if product.discount_price %}
+            <p style="color:#555; text-decoration:line-through; font-size:14px;">{{ product.display_price }} сом</p>
+            <p style="color:#a78bfa; font-size:28px; font-weight:bold;">{{ product.display_discount }} сом</p>
+        {% else %}
+            <p style="color:#a78bfa; font-size:28px; font-weight:bold;">{{ product.display_price }} сом</p>
+        {% endif %}
+        {% if product.stock > 0 %}
+            <p style="color:#4ade80; margin:10px 0;">✅ В наличии: {{ product.stock }} шт.</p>
+            <a href="{% url 'add_to_cart' product.id %}" class="btn" style="margin-top:10px; width:100%;">🛒 В корзину</a>
+        {% else %}
+            <p style="color:#f87171; margin:10px 0;">❌ Нет в наличии</p>
+        {% endif %}
+
+        <a id="wa-btn" href="#" target="_blank" style="
+            display:flex; align-items:center; justify-content:center; gap:8px;
+            margin-top:10px; width:100%;
+            background:#25D366; color:white;
+            padding:12px; border-radius:10px;
+            font-weight:700; font-size:14px;
+            text-decoration:none;
+        ">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.123.554 4.118 1.528 5.855L.057 23.928a.5.5 0 0 0 .611.611l6.083-1.471A11.94 11.94 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.891 0-3.667-.523-5.183-1.433l-.369-.22-3.862.934.951-3.77-.242-.389A9.96 9.96 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
+            Купить через WhatsApp
+        </a>
+
+        <script>
+        var text = "Здравствуйте! 👋\n" +
+            "Я хочу купить товар из вашего магазина.\n\n" +
+            "📦 Название: {{ product.name }}\n" +
+            "📂 Категория: {{ product.category.name }}\n" +
+            "💰 Цена: {{ product.display_final_price }} сом\n" +
+            "🖼️ Фото: {{ request.scheme }}://{{ request.get_host }}{{ product.image.url }}\n\n" +
+            "Можете рассказать подробнее и как оформить заказ?";
+        document.getElementById('wa-btn').href = "https://wa.me/996227860000?text=" + encodeURIComponent(text);
+        </script>
+    </div>
+</div>
+
+<section class="reviews-section" style="margin-top:30px;">
+    <h2 class="reviews-section__title">Отзывы{% if reviews %} <span class="reviews-section__count">({{ reviews|length }})</span>{% endif %}</h2>
+
+    {% if user.is_authenticated %}
+    <form class="review-compose" method="post" action="{% url 'product_detail' product.slug %}">
+        {% csrf_token %}
+        <label class="review-compose__label" for="review-text">Ваш отзыв</label>
+        <textarea id="review-text" name="text" rows="3" required placeholder="Расскажите о товаре…"></textarea>
+        <label class="review-compose__label" for="review-stars">Оценка</label>
+        <select id="review-stars" name="stars">
+            <option value="5">5 — отлично</option>
+            <option value="4">4</option>
+            <option value="3">3</option>
+            <option value="2">2</option>
+            <option value="1">1 — плохо</option>
+        </select>
+        <button type="submit" class="review-compose__submit">Отправить отзыв</button>
+    </form>
+    {% else %}
+    <p class="reviews-section__hint"><a href="{% url 'login' %}">Войдите</a>, чтобы оставить отзыв.</p>
+    {% endif %}
+
+    <div class="reviews-list">
+    {% for review in reviews %}
+    <article class="review-card{% if forloop.counter > 2 %} review-card--collapsed{% endif %}">
+        <header class="review-card__head">
+            <span class="review-card__user">{{ review.user.username }}</span>
+            <time class="review-card__date" datetime="{{ review.created_at|date:'c' }}">{{ review.created_at|date:"d.m.Y" }}</time>
+        </header>
+        <div class="review-stars" aria-label="Оценка {{ review.stars }} из 5">
+            {% for _ in "12345" %}
+            <span class="review-star{% if forloop.counter <= review.stars %} review-star--on{% endif %}">★</span>
+            {% endfor %}
+        </div>
+        <p class="review-card__text">{{ review.text|linebreaksbr }}</p>
+        <footer class="review-card__foot">
+            {% if user.is_authenticated %}
+            <button type="button" class="review-helpful{% if review.id in liked_review_ids %} review-helpful--active{% endif %}"
+                data-review-id="{{ review.id }}"
+                onclick="likeReview({{ review.id }}, this)"
+                aria-pressed="{% if review.id in liked_review_ids %}true{% else %}false{% endif %}">
+                <span class="review-helpful__icon" aria-hidden="true">👍</span>
+                <span class="review-helpful__label">Полезно</span>
+                <span class="like-count">{{ review.like_count }}</span>
+            </button>
+            {% else %}
+            <span class="review-helpful-readonly"><span aria-hidden="true">👍</span> Полезно · {{ review.like_count }}</span>
+            {% endif %}
+        </footer>
+    </article>
+    {% empty %}
+        <p class="reviews-section__empty">Отзывов пока нет.</p>
+    {% endfor %}
+    </div>
+
+    {% if review_more_count > 0 %}
+    <button type="button" id="show-more-reviews" class="btn-more-reviews" onclick="showMoreReviews(this)">
+        Ещё отзывы{% if review_more_count %} <span class="btn-more-reviews__n">({{ review_more_count }})</span>{% endif %}
+    </button>
+    {% endif %}
+
+<script>
+function showMoreReviews(btn) {
+    document.querySelectorAll('.review-card--collapsed').forEach(function (el) {
+        el.classList.remove('review-card--collapsed');
+    });
+    btn.remove();
+}
+
+function likeReview(reviewId, btn) {
+    fetch('/review/' + reviewId + '/like/', {
+        credentials: 'same-origin',
+        headers: {'X-Requested-With': 'XMLHttpRequest'}
+    })
+    .then(function (r) { return r.json(); })
+    .then(function (data) {
+        btn.classList.toggle('review-helpful--active', data.liked);
+        btn.setAttribute('aria-pressed', data.liked ? 'true' : 'false');
+        var c = btn.querySelector('.like-count');
+        if (c) c.textContent = data.count;
+        btn.style.transform = 'scale(1.04)';
+        setTimeout(function () { btn.style.transform = ''; }, 150);
+    })
+    .catch(function () {});
+}
+</script>
+</section>
+
+{% if similar %}
+<div style="margin-top:30px;">
+    <h2 style="color:white; margin-bottom:16px;">Похожие товары</h2>
+    <div class="products-grid">
+        {% for p in similar %}
+        <div class="product-card">
+            <div class="product-img">
+                {% if p.image %}
+                    <img src="{{ p.image.url }}" alt="{{ p.name }}">
+                {% else %}
+                    <span style="color:#666;">Нет фото</span>
+                {% endif %}
+            </div>
+            <div class="product-info">
+                <p class="product-brand">{{ p.brand.name }}</p>
+                <h3 class="product-name">{{ p.name }}</h3>
+                {% if p.discount_price %}
+                    <p class="price-old">{{ p.display_price }} сом</p>
+                    <p class="price-new">{{ p.display_discount }} сом</p>
+                {% else %}
+                    <p class="price-new">{{ p.display_price }} сом</p>
+                {% endif %}
+                {% if p.stock > 0 %}
+                    <p class="in-stock">✅ В наличии</p>
+                {% else %}
+                    <p class="out-stock">❌ Нет в наличии</p>
+                {% endif %}
+                <div class="card-btns">
+                    <a href="{% url 'product_detail' p.slug %}" class="btn btn-outline">Подробнее</a>
+                    {% if p.stock > 0 %}
+                        <a href="{% url 'add_to_cart' p.id %}" class="btn">В корзину</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}

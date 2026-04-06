@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block searchbar %}{% endblock %}
+
+{% block content %}
+<style>
+    .bottom-bar { display: none !important; }
+</style>
+
+<div style="display:flex; justify-content:center; align-items:center; min-height:80vh;">
+    <div class="form-box">
+        <h2>Регистрация</h2>
+        <form method="post">
+            {% csrf_token %}
+            <label style="color:#aaa; font-size:13px;">Имя пользователя (никнейм)</label>
+            <input type="text" name="username" placeholder="Придумай никнейм..." required style="margin-top:6px;">
+            {% if form.username.errors %}
+                {% for err in form.username.errors %}
+                    <p style="color:#f87171; font-size:13px; margin-top:8px;">{{ err }}</p>
+                {% endfor %}
+            {% elif error %}
+                <p style="color:#f87171; font-size:13px; margin-top:8px;">{{ error }}</p>
+            {% endif %}
+            <button type="submit" class="btn" style="width:100%; margin-top:15px; padding:12px;">
+                Зарегистрироваться
+            </button>
+        </form>
+        <p>Уже есть аккаунт? <a href="{% url 'login' %}">Войти</a></p>
+    </div>
+</div>
+{% endblock %}

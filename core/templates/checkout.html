@@ -1,0 +1,155 @@
+{% extends 'base.html' %}
+{% block searchbar %}{% endblock %}
+{% block content %}
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap');
+
+  .checkout-page { font-family: 'DM Sans', sans-serif; padding: 0 14px 30px; }
+
+  .page-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 18px; font-weight: 700; color: white;
+    padding: 16px 0 16px;
+  }
+
+  /* ORDER SUMMARY */
+  .summary-card {
+    background: #11112b;
+    border: 1px solid #1e1e3a;
+    border-radius: 16px;
+    overflow: hidden;
+    margin-bottom: 16px;
+  }
+  .summary-header {
+    padding: 14px 16px;
+    background: rgba(108,99,255,0.07);
+    border-bottom: 1px solid #1e1e3a;
+    font-family: 'Syne', sans-serif;
+    font-size: 14px; font-weight: 700; color: #a78bfa;
+    letter-spacing: 0.5px; text-transform: uppercase;
+  }
+  .summary-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 11px 16px;
+    border-bottom: 1px solid #161628;
+    font-size: 13px;
+  }
+  .summary-row:last-child { border-bottom: none; }
+  .summary-row .item-name { color: #aaa; flex: 1; margin-right: 8px; }
+  .summary-row .item-qty { color: #555; font-size: 12px; margin: 0 8px; }
+  .summary-row .item-price { color: #a78bfa; font-weight: 600; white-space: nowrap; }
+  .summary-total {
+    padding: 14px 16px;
+    background: rgba(108,99,255,0.05);
+    border-top: 1px solid #1e1e3a;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .summary-total span { color: #888; font-size: 14px; }
+  .summary-total strong { color: white; font-size: 20px; font-family: 'Syne', sans-serif; }
+  .summary-total strong em { color: #a78bfa; font-style: normal; }
+
+  /* FORM */
+  .form-card {
+    background: #11112b;
+    border: 1px solid #1e1e3a;
+    border-radius: 16px;
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+  .form-section-title {
+    padding: 14px 16px;
+    background: rgba(108,99,255,0.07);
+    border-bottom: 1px solid #1e1e3a;
+    font-family: 'Syne', sans-serif;
+    font-size: 14px; font-weight: 700; color: #a78bfa;
+    letter-spacing: 0.5px; text-transform: uppercase;
+  }
+  .form-body { padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+
+  .field-group { display: flex; flex-direction: column; gap: 6px; }
+  .field-label {
+    color: #666; font-size: 12px; font-weight: 500;
+    text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .field-input {
+    background: #0d0d1a;
+    border: 1px solid #2a2a4a;
+    border-radius: 10px;
+    padding: 12px 14px;
+    color: white; font-size: 15px; font-family: 'DM Sans', sans-serif;
+    outline: none; width: 100%; transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .field-input:focus {
+    border-color: #6c63ff;
+    box-shadow: 0 0 0 3px rgba(108,99,255,0.15);
+  }
+  .field-input::placeholder { color: #333; }
+  textarea.field-input { resize: none; min-height: 90px; line-height: 1.5; }
+
+  /* SUBMIT */
+  .confirm-btn {
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    width: 100%; padding: 16px;
+    background: linear-gradient(135deg, #6c63ff, #8b5cf6);
+    color: white; border: none;
+    border-radius: 14px; font-size: 16px; font-weight: 700;
+    font-family: 'Syne', sans-serif; letter-spacing: 0.5px;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(108,99,255,0.4);
+    transition: all 0.2s;
+  }
+  .confirm-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 28px rgba(108,99,255,0.5); }
+  .confirm-btn:active { transform: translateY(0); }
+</style>
+
+<div class="checkout-page">
+  <div class="page-title">Оформление заказа</div>
+
+  <!-- ORDER SUMMARY -->
+  <div class="summary-card">
+    <div class="summary-header">Ваш заказ</div>
+    {% for item in items %}
+    <div class="summary-row">
+      <span class="item-name">{{ item.product.name }}</span>
+      <span class="item-qty">× {{ item.quantity }}</span>
+      <span class="item-price">{{ item.total_price|floatformat:0 }} сом</span>
+    </div>
+    {% endfor %}
+    <div class="summary-total">
+      <span>Итого к оплате</span>
+      <strong><em>{{ total|floatformat:0 }} сом</em></strong>
+    </div>
+  </div>
+
+  <!-- FORM -->
+  <form method="post">
+    {% csrf_token %}
+    <div class="form-card">
+      <div class="form-section-title">Данные получателя</div>
+      <div class="form-body">
+        <div class="field-group">
+          <label class="field-label">Имя</label>
+          <input type="text" name="name" class="field-input" placeholder="Ваше имя" required>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Телефон</label>
+          <input type="tel" name="phone" class="field-input" placeholder="+996 XXX XXX XXX" required>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Адрес доставки</label>
+          <textarea name="address" class="field-input" placeholder="Город, улица, дом, квартира..." required></textarea>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Комментарий</label>
+          <textarea name="comment" class="field-input" placeholder="Пожелания к заказу (необязательно)..."></textarea>
+        </div>
+      </div>
+    </div>
+
+    <button type="submit" class="confirm-btn">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20,6 9,17 4,12"/></svg>
+      Подтвердить заказ
+    </button>
+  </form>
+</div>
+{% endblock %}
